@@ -1,0 +1,12 @@
+<div class="mainDiv">
+    <img [src]="product.images[0]" class="image" height="50px" width="50px" alt="image">
+  <ul class="ul">
+    <li>Product-Name:{{ product.title }}</li>
+    <li>Price:{{ product.price }}</li>
+    <li>Description:{{ product.description }}</li>
+  </ul>
+  <div class="ratingDiv">
+    <p>Rating:{{ product.rating }}</p>
+    <button id="cartBtn">Add to cart</button>
+  </div>
+</div>

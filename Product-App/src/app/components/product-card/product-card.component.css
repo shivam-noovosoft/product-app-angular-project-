@@ -1,0 +1,63 @@
+.mainDiv {
+  background-color: steelblue;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 2em;
+  align-items: center;
+  padding-inline: 1em;
+}
+
+.image {
+  width: 35%;
+  height: 100%;
+}
+
+.ul {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2em;
+  height: 100%;
+}
+
+.ratingDiv {
+  flex-direction: column;
+  display: flex;
+  width: 40%;
+  justify-content: center;
+  gap: 1em;
+  height: 100%;
+  text-align: center;
+}
+
+#cartBtn {
+  height: 3em;
+  border-radius: 10px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

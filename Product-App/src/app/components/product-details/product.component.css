@@ -1,0 +1,13 @@
+.mainDiv{
+  display:flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  background-color:lightgrey;
+  min-height:100%;
+  gap: 3em;
+  padding:2em;
+  padding-left: 5em;
+}
+#product-card{
+  width:45%;
+}
