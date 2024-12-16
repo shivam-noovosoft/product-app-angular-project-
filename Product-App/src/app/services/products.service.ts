@@ -1,19 +1,18 @@
-import {Injectable, OnInit} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {BehaviorSubject, Observable, Subject} from 'rxjs';
+import {Injectable,} from '@angular/core';
+import {BehaviorSubject, Observable} from 'rxjs';
+import {FetchDataService} from './fetch-data.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductsService {
-  baseUrl:string='https://dummyjson.com/products/'
   public productsSubject = new BehaviorSubject<any>(null);
 
-  constructor(private http: HttpClient) {
+  constructor(private fetchDataService: FetchDataService) {
   }
 
   getProducts(endPoint:string,val: string):Observable<any>{
-    return this.http.get(`${this.baseUrl}${endPoint}`, {params: {q: val}})
+    return this.fetchDataService.fetchData(endPoint,val);
   }
 
 }

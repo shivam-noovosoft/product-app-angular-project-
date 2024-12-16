@@ -48,7 +48,7 @@ export class NavbarComponent implements AfterViewInit, OnInit {
   }
 
   getProductByCategory(val: NgModel) {
-    this.productsService.getProducts(`category/${val.value}`, '').subscribe(products => {
+    this.productsService.getProducts(`products/category/${val.value}`, '').subscribe(products => {
       this.productsService.productsSubject.next(products);
     })
   }
@@ -60,7 +60,7 @@ export class NavbarComponent implements AfterViewInit, OnInit {
   }
 
   fetchCategories() {
-    this.productsService.getProducts('categories', '').subscribe(category => {
+    this.productsService.getProducts('products/categories', '').subscribe(category => {
       if (category) {
         this.categories = category;
       }

@@ -1,17 +1,15 @@
-<body>
 <main class="mainDiv">
-  <section class="companyDiv">
-    <img src="./Public/company%20logo.png">
-    <h6>Noovosoft's Asset Management App</h6>
-  </section>
-  <span class="divisionLine"></span>
-  <section class="formDiv">
-    <img src="./Public/grp-login-profile.png" alt="">
-    <input type="email" name="" placeholder="Enter your email" id="email" required min="0">
-    <input type="password" name="" placeholder="Enter your password" id="pass" required>
-    <span id="loginWarning" style="color: white"></span>
-    <span onclick="openPasswordDialog('forgot-password','backdrop')" style="color: white" id="forgot-span">Forgot password ??</span>
-    <button class="loginBtn" onclick="validateUser()">LOGIN</button>
-  </section>
+  <form class="formDiv" >
+    <img src='assets/grp-login-profile.png' alt="group icon">
+    <ng-select
+      #selectedUser='ngModel' [(ngModel)]="selectedUsers" class="custom-select" placeholder="Select user" name="select" required>
+        <ng-option [value]="user.id" *ngFor="let user of users">{{ user.firstName }} {{ user.lastName }}</ng-option>
+
+    </ng-select>
+    <!--      <input type="email" name="" placeholder="Enter your email" id="email" required min="0">-->
+    <input type="password" name="input" #password='ngModel' ngModel placeholder="Enter your password" id="pass" required>
+    <button class="loginBtn" (click)="login(selectedUser.value)"
+    [disabled]="selectedUser.invalid || password.invalid"
+    >LOGIN</button>
+  </form>
 </main>
-</body>
