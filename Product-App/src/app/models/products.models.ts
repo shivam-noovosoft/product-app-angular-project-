@@ -1,3 +1,10 @@
+export interface Response{
+  limit:number;
+  products:Product[];
+  skip:number;
+  total:number;
+}
+
 interface Dimensions {
   width: number;
   height: number;
@@ -42,4 +49,11 @@ export interface Product {
   meta: Meta;
   images: string[];
   thumbnail: string;
+}
+
+
+export interface Category{
+name: string;
+slug: string;
+url: string;
 }

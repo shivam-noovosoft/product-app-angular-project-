@@ -6,14 +6,14 @@ import {BehaviorSubject, Observable, Subject} from 'rxjs';
   providedIn: 'root'
 })
 export class ProductsService {
-
+  baseUrl:string='https://dummyjson.com/products/'
   public productsSubject = new BehaviorSubject<any>(null);
 
   constructor(private http: HttpClient) {
   }
 
-  getProducts(url:string,val: string):Observable<any>{
-    return this.http.get(url, {params: {q: val}})
+  getProducts(endPoint:string,val: string):Observable<any>{
+    return this.http.get(`${this.baseUrl}${endPoint}`, {params: {q: val}})
   }
 
 }

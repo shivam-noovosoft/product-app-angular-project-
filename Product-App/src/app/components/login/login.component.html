@@ -1,1 +1,17 @@
-<p>login works!</p>
+<body>
+<main class="mainDiv">
+  <section class="companyDiv">
+    <img src="./Public/company%20logo.png">
+    <h6>Noovosoft's Asset Management App</h6>
+  </section>
+  <span class="divisionLine"></span>
+  <section class="formDiv">
+    <img src="./Public/grp-login-profile.png" alt="">
+    <input type="email" name="" placeholder="Enter your email" id="email" required min="0">
+    <input type="password" name="" placeholder="Enter your password" id="pass" required>
+    <span id="loginWarning" style="color: white"></span>
+    <span onclick="openPasswordDialog('forgot-password','backdrop')" style="color: white" id="forgot-span">Forgot password ??</span>
+    <button class="loginBtn" onclick="validateUser()">LOGIN</button>
+  </section>
+</main>
+</body>

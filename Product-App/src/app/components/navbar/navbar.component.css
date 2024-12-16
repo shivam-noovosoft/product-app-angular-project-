@@ -1,55 +1,127 @@
-nav{
-  background-color:rgb(31, 42, 68);
-  width: 90%;
-  height:10%;
+nav {
+  background-color:#1d6ded;
+  width: 100%;
+  height: 10%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-inline: 5%;
+  padding-inline:2%;
   color: white;
-}
-
-.navDiv-1{
-  /*background-color: mediumpurple;*/
-  width: 20%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
 }
 .categoryDiv{
-  /*background-color: pink;*/
-  width: 45%;
-  height: 100%;
-  justify-content: center;
-  gap: 5px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-nav>input{
-  width: 20%;
-  height: 30%;
-  border: none;
-  outline: none;
-  background-color:black;
-  border-radius: 20px;
-  padding: 1em;
-  color: white;
+  display: none;
 }
 
-.navDiv-1>button{
-  width: 8em;
-  height: 3em;
-  background-color:white;
-  border-radius: 10px;
-  box-shadow: 1px 1px 3px 1px black;
+nav > input {
+  width: 30%;
+  height:15%;
+  border: none;
+  outline: none;
+  background-color:whitesmoke;
+  border-radius: 20px;
+  padding: 1em;
+  color:black;
 }
-.categoryDiv>select{
-  /*width:50%*/
+
+.navDiv-1 {
+  /*background-color: blue;*/
+  width: 30%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  justify-content:end;
 }
-.select>option{
+
+.navDiv-1 > button {
+  min-width: 5em;
+  height:2em;
   background-color: white;
+  border-radius: 10px;
+}
+
+@media (min-width:500px) and (max-width:900px){
+
+  nav {
+    width: 100%;
+    height: 10%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-inline: 3%;
+    color: white;
+  }
+
+  .navDiv-1 {
+    /*background-color: mediumpurple;*/
+    width:15em;
+    height: 100%;
+    gap: .2em;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .categoryDiv {
+
+    width: 60%;
+    height: 100%;
+    justify-content: center;
+    gap: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  nav > input {
+    width: 30%;
+    /*height: 30%;*/
+    border: none;
+    outline: none;
+    border-radius: 20px;
+    padding: 1em;
+  }
+
+  .navDiv-1 > button {
+    /*width:5em;*/
+    height: 2.5em;
+    background-color: white;
+    border-radius: 10px;
+  }
+
+  .categoryDiv > select {
+    /*width:50%*/
+  }
+
+  .select > option {
+    background-color: white;
+  }
+
+  #select {
+    width: 10em;
+  }
+
+}
+
+@media (min-width:901px){
+  nav > input {
+    width:20em;
+  }
+  .categoryDiv {
+    width:10em;
+    height: 100%;
+    justify-content: center;
+    gap: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  #select{
+    width: 100%;
+  }
+  #cartBtn {
+    height: 2.4em;
+  }
 }
 
 
