@@ -1,0 +1,4 @@
+<div class="mainDiv">
+<!--  <h4 *ngIf="cartItems.length<=0">No Items in the cart</h4>-->
+<app-product-card *ngFor="let product of cartItems"  [product]="product" id="product-card"></app-product-card>
+</div>

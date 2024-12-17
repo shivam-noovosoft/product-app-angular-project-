@@ -1,4 +1,4 @@
-export interface Users{
+export interface UserResponse{
   limit:number;
   skip:number;
   total:number;

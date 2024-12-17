@@ -4,7 +4,9 @@
     <li style="font-weight:bolder">{{ product.title }}</li>
     <li style="font-weight:bold">{{ product.price | currency}}</li>
     <li style="font-size:small">{{ product.description | ellipses }}</li>
+<!--    <li style="color: black">{{ product.description}}</li>-->
     <li style="font-size:small">Rating:{{ product.rating}}/5</li>
-    <button type="button" id="cartBtn" (click)="addToCart(product)">Add to cart</button>
+    <ng-content></ng-content>
+<!--    <button type="button" id="cartBtn" (click)="addToCart(product)">Add to cart</button>-->
   </ul>
 </div>

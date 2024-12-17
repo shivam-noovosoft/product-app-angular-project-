@@ -1,4 +1,4 @@
-export interface Response{
+export interface ProductResponse{
   limit:number;
   products:Product[];
   skip:number;

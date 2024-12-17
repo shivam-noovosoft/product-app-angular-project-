@@ -1,10 +1,11 @@
 import {Component, inject, Inject, OnInit} from '@angular/core';
 import {UsersService} from '../../services/users.service';
-import {User, Users} from '../../models/users.models';
+import {User, UserResponse} from '../../models/users.models';
 import {NgOptionComponent, NgSelectComponent} from '@ng-select/ng-select';
 import {NgForOf} from '@angular/common';
 import {FormControl, FormsModule, NgModel} from '@angular/forms';
 import {Router} from '@angular/router';
+import {AuthService} from '../../services/auth.service';
 
 @Component({
   standalone: true,
@@ -18,8 +19,9 @@ import {Router} from '@angular/router';
 export class LoginComponent implements OnInit {
   users!: User[];
   selectedUsers!:any;
+  adminData={id:0,firstName:'admin'}
   router=inject(Router)
-  constructor(@Inject(UsersService) private usersService: UsersService) {
+  constructor(@Inject(UsersService) private usersService: UsersService,private authService:AuthService) {
   }
 
   ngOnInit() {
@@ -29,19 +31,23 @@ export class LoginComponent implements OnInit {
 
   private fetchUsers() {
     this.usersService.getUsers('users', '').subscribe(
-      (value: User) => this.usersService.allUsers.next(value),
+      (value: UserResponse) => this.usersService.allUsers.next(value.users),
     )
   }
 
   private updateUsers(){
-    this.usersService.allUsers.subscribe(users=>{
-      this.users= users['users'];
+    this.usersService.allUsers.subscribe((users:User[])=>{
+      this.users= users;
+      console.log(this.users)
     })
   }
 
   protected login(user:any){
-    this.router.navigate([`/products/${user}`]).then()
+    this.authService.auth=true;
+    localStorage.setItem('loggedUserData',JSON.stringify(user))
+    this.router.navigate(['/home']).then()
   }
+
 
 }
 

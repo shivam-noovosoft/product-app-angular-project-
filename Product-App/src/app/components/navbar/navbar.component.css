@@ -5,16 +5,22 @@ nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-inline:2%;
+  padding-right:2%;
+  padding-left: 1%;
   color: white;
 }
-.categoryDiv{
-  display: none;
+
+.userNameAndInputDiv{
+  width: 40%;
+  display: flex;
+  flex-direction: column;
+  gap:5px;
+  align-items: center;
 }
 
-nav > input {
-  width: 30%;
-  height:15%;
+.userNameAndInputDiv > input {
+  width: 50%;
+  height:2em;
   border: none;
   outline: none;
   background-color:whitesmoke;
@@ -24,21 +30,31 @@ nav > input {
 }
 
 .navDiv-1 {
-  /*background-color: blue;*/
-  width: 30%;
-  height: 100%;
+  /*background-color:purple;*/
+  width: 50%;
+  height: 70%;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  flex-wrap: wrap;
+  align-items:start;
   gap: 5px;
-  justify-content:end;
+  justify-content:start;
+}
+#select{
+  flex-grow: 1;
 }
 
-.navDiv-1 > button {
+.navDiv-1 > button,.backBtn{
   min-width: 5em;
   height:2em;
   background-color: white;
   border-radius: 10px;
 }
+
+.userSelect{
+  width: 10em;
+}
+
 
 @media (min-width:500px) and (max-width:900px){
 
@@ -73,7 +89,7 @@ nav > input {
     align-items: center;
   }
 
-  nav > input {
+  .userNameAndInputDiv> input {
     width: 30%;
     /*height: 30%;*/
     border: none;
@@ -89,9 +105,6 @@ nav > input {
     border-radius: 10px;
   }
 
-  .categoryDiv > select {
-    /*width:50%*/
-  }
 
   .select > option {
     background-color: white;
@@ -104,8 +117,19 @@ nav > input {
 }
 
 @media (min-width:901px){
-  nav > input {
+
+  .userNameAndInputDiv{
+    flex-direction:row;
+    gap:1em
+  }
+  .userNameAndInputDiv> input {
     width:20em;
+  }
+  .navDiv-1{
+    width:25em;
+    height: 50%;
+    justify-content: center;
+    align-items: center;
   }
   .categoryDiv {
     width:10em;
@@ -113,15 +137,15 @@ nav > input {
     justify-content: center;
     gap: 5px;
     display: flex;
-    flex-direction: column;
     align-items: center;
   }
   #select{
     width: 100%;
   }
-  #cartBtn {
-    height: 2.4em;
+  .navDiv-1>button{
+    height:2.4em;
   }
+
 }
 
 

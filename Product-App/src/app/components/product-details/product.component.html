@@ -1,4 +1,13 @@
 <div class="mainDiv">
   <h1 *ngIf="products.length<=0">No Products related to search</h1>
-  <app-product-card *ngFor="let product of products" [product]="product" id="product-card" (sendCartData)="updateUserCart($event)" ></app-product-card>
+  <div class="productsListDiv">
+  <app-product-card *ngFor="let product of products" [product]="product" id="product-card" >
+    <button (click)="addToUserCart(loggedUser.id,product)" class="addBtn">Add to cart</button>
+  </app-product-card>
+  </div>
+  <hr class="hr">
+  <div class="paginationDiv">
+    <button (click)="fetchPreviousProducts()"><<</button><hr>
+    <button (click)="fetchNextProducts()">>></button>
+  </div>
 </div>

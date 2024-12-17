@@ -1,15 +1,16 @@
-import {Component, Inject, Input, OnInit} from '@angular/core';
-import {AsyncPipe, NgForOf, NgIf} from '@angular/common';
+import {Component, Inject, Input, OnDestroy, OnInit} from '@angular/core';
+import {NgForOf, NgIf} from '@angular/common';
 import {ProductsService} from '../../services/products.service';
 import {ProductCardComponent} from '../product-card/product-card.component';
-import {Product} from '../../models/products.models';
-import {Response} from '../../models/products.models';
-import {ActivatedRoute} from '@angular/router';
+import {Product, ProductResponse} from '../../models/products.models';
+import {User} from '../../models/users.models';
+import {FetchDataService} from '../../services/fetch-data.service';
+
 
 @Component({
   standalone: true,
   selector: 'app-product-details',
-  imports: [NgForOf, AsyncPipe, ProductCardComponent, NgIf],
+  imports: [NgForOf, ProductCardComponent, NgIf],
   templateUrl: './product.component.html',
   styleUrl: './product.component.css'
 })
@@ -17,42 +18,61 @@ export class ProductComponent implements OnInit {
 
   products: Product[] = [];
   userCart: Product[] = [];
-  @Input() userId!: number;
+  loggedUser!: User
 
   constructor(
     @Inject(ProductsService) private productService: ProductsService,
+    private fetchDataService: FetchDataService
   ) {
   }
 
   ngOnInit() {
     this.fetchProducts();
     this.updateProducts()
-    this.updateUserCartFromLocal()
+    this.getLoggedUserData()
+    this.updateUserCartFromLocalStorage()
   }
 
-  updateUserCart(item: string) {
-    this.userCart.push(JSON.parse(item))
-    localStorage.setItem('user1', JSON.stringify(this.userCart))
+
+  addToUserCart(userId:number,item:Product) {
+    this.userCart.push(item)
+    localStorage.setItem(`${userId}`, JSON.stringify(this.userCart))
   }
 
   private updateProducts() {
-    this.productService.productsSubject.subscribe(products => {
-      this.products = products['products'];
+    this.productService.productsSubject.subscribe((products: Product[]) => {
+      this.products = products;
     })
   }
 
   private fetchProducts() {
-    this.productService.getProducts('products/search', '').subscribe((products: Response) => {
-      this.productService.productsSubject.next(products);
+    this.productService.getProducts('products/search', '').subscribe((products: ProductResponse) => {
+      this.productService.productsSubject.next(products.products);
     })
   }
 
-  private updateUserCartFromLocal() {
-    const localSto = JSON.parse(<string>localStorage.getItem('user1'))
+  private updateUserCartFromLocalStorage() {
+    const localSto = JSON.parse(<string>localStorage.getItem(`${this.loggedUser.id}`))
     if (!localSto) {
       return;
     }
-    this.userCart = JSON.parse(<string>localStorage.getItem('user1'));
+    this.userCart = JSON.parse(<string>localStorage.getItem(`${this.loggedUser.id}`));
+  }
+
+  getLoggedUserData() {
+    this.loggedUser = JSON.parse(<string>localStorage.getItem('loggedUserData'))
+  }
+
+  protected fetchNextProducts() {
+    this.fetchDataService.skip += 15
+    this.fetchProducts()
+    this.updateProducts()
+  }
+
+  protected fetchPreviousProducts() {
+    this.fetchDataService.skip -= 15
+    this.fetchProducts()
+    this.updateProducts()
   }
 
 }
