@@ -1,5 +1,5 @@
 import {Injectable,} from '@angular/core';
-import {BehaviorSubject, Observable} from 'rxjs';
+import {BehaviorSubject,Subject, Observable} from 'rxjs';
 import {FetchDataService} from './fetch-data.service';
 
 @Injectable({
@@ -7,7 +7,7 @@ import {FetchDataService} from './fetch-data.service';
 })
 export class ProductsService {
   public productsSubject = new BehaviorSubject<any>(null);
-
+  public userChange=new Subject<void>()
   constructor(private fetchDataService: FetchDataService) {
   }
 

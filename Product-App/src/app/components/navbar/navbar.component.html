@@ -11,7 +11,7 @@
         }
       </ng-select>
     <span *ngIf="loggedUserData.firstName!=='admin'">{{ loggedUserData.firstName }} {{ loggedUserData.lastName }}</span>
-    <input type="text" placeholder="Search products...." #searchValue='ngModel' [(ngModel)]="searchVal"
+    <input type="text" placeholder="Search products...." #searchValue='ngModel' ngModel
            *ngIf="!routeToCart"/>
   </div>
   <div class="navDiv-1" *ngIf="!routeToCart">

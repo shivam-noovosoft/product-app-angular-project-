@@ -15,6 +15,7 @@ import {Router} from '@angular/router';
 import {User, UserResponse} from '../../models/users.models';
 import {AuthService} from '../../services/auth.service';
 import {UsersService} from '../../services/users.service';
+import {LoggedUserService} from '../../services/loggedUser.service';
 
 @Component({
   standalone: true,
@@ -31,23 +32,22 @@ import {UsersService} from '../../services/users.service';
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
-export class NavbarComponent implements AfterViewInit, OnInit,OnDestroy{
+export class NavbarComponent implements OnInit,OnDestroy,AfterViewInit{
 
-  searchVal!: string
   selectedCategory!: Category;
   categories!: Category[]
   loggedUserData!:User;
   users!: User[];
   routeToCart:boolean=false;
-  selectUser:any
+  selectUser:any;
   @ViewChild('searchValue') searchValue!: FormControl;
 
   constructor(
     private productsService: ProductsService,
     private router:Router,private authService:AuthService,
     private usersService: UsersService,
-    private cartAuthService:CartAuthService
-
+    private cartAuthService:CartAuthService,
+    private loggedUserService:LoggedUserService
   ) {
   }
 
@@ -58,14 +58,16 @@ export class NavbarComponent implements AfterViewInit, OnInit,OnDestroy{
   }
 
   ngAfterViewInit() {
-      this.searchValue.valueChanges?.pipe(
-        switchMap(searchValue => {
-          return this.productsService.getProducts('products/search', searchValue)
-        })
-      ).subscribe((val:ProductResponse) => this.productsService.productsSubject.next(val.products))
+      // this.searchValue.valueChanges?.pipe(
+      //   switchMap(searchValue => {
+      //     return this.productsService.getProducts('products/search', searchValue)
+      //   })
+      // ).subscribe((val:ProductResponse) => this.productsService.productsSubject.next(val.products))
   }
+
   ngOnDestroy() {
     this.routeToCart=false
+    // this.usersService.allUsers.unsubscribe()
   }
 
   getProductByCategory(val: NgModel) {
@@ -132,7 +134,10 @@ export class NavbarComponent implements AfterViewInit, OnInit,OnDestroy{
   }
 
   protected adminSelectedUser(user:User){
+    this.loggedUserService.loggedUser.next(user)
+    // this.productsService.userChange.complete()
     localStorage.setItem('loggedUserData',JSON.stringify(user))
+
   }
 
 }
