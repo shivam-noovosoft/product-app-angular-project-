@@ -38,7 +38,7 @@ export class LoginComponent implements OnInit {
   private updateUsers(){
     this.usersService.allUsers.subscribe((users:User[])=>{
       this.users= users;
-      console.log(this.users)
+      console.log(this.users);
     })
   }
 

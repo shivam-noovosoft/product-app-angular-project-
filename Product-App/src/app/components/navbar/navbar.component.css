@@ -24,7 +24,7 @@ nav {
   border: none;
   outline: none;
   background-color:whitesmoke;
-  border-radius: 20px;
+  /*border-radius: 20px;*/
   padding: 1em;
   color:black;
 }
@@ -48,7 +48,8 @@ nav {
   min-width: 5em;
   height:2em;
   background-color: white;
-  border-radius: 10px;
+  border: none;
+  /*border-radius: 10px;*/
 }
 
 .userSelect{
@@ -94,17 +95,13 @@ nav {
     /*height: 30%;*/
     border: none;
     outline: none;
-    border-radius: 20px;
     padding: 1em;
   }
 
   .navDiv-1 > button {
-    /*width:5em;*/
     height: 2.5em;
     background-color: white;
-    border-radius: 10px;
   }
-
 
   .select > option {
     background-color: white;

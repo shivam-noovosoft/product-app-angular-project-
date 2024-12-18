@@ -6,7 +6,10 @@
         <ng-option [value]="adminData" >Admin</ng-option>
         <ng-option [value]="user" *ngFor="let user of users">{{ user.firstName }} {{ user.lastName }}</ng-option>
     </ng-select>
-    <input type="password" name="input" #password='ngModel' ngModel placeholder="Enter your password" id="pass" required>
+    <input type="password" name="input"
+           #password='ngModel' ngModel
+           placeholder="Enter your password" id="pass"
+           minlength="5" required>
     <button class="loginBtn"
     [disabled]="selectedUser.invalid || password.invalid"
             type="submit"

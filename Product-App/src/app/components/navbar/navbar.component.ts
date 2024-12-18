@@ -1,8 +1,9 @@
 import {Component, ViewChild, AfterViewInit, OnInit, OnDestroy} from '@angular/core';
 import {ProductsService} from '../../services/products.service';
 import {FormControl, FormsModule, NgModel} from '@angular/forms';
-import {switchMap, tap} from 'rxjs';
+import {switchMap} from 'rxjs';
 import {Category, ProductResponse} from '../../models/products.models';
+import {CartAuthService} from '../../services/auth.service';
 import {NgForOf, NgIf} from '@angular/common';
 import {
   NgOptionTemplateDirective,
@@ -10,7 +11,7 @@ import {
   NgLabelTemplateDirective,
   NgOptionComponent,
 } from '@ng-select/ng-select';
-import {ActivatedRoute, Router} from '@angular/router';
+import {Router} from '@angular/router';
 import {User, UserResponse} from '../../models/users.models';
 import {AuthService} from '../../services/auth.service';
 import {UsersService} from '../../services/users.service';
@@ -45,6 +46,7 @@ export class NavbarComponent implements AfterViewInit, OnInit,OnDestroy{
     private productsService: ProductsService,
     private router:Router,private authService:AuthService,
     private usersService: UsersService,
+    private cartAuthService:CartAuthService
 
   ) {
   }
@@ -58,7 +60,7 @@ export class NavbarComponent implements AfterViewInit, OnInit,OnDestroy{
   ngAfterViewInit() {
       this.searchValue.valueChanges?.pipe(
         switchMap(searchValue => {
-          return this.productsService.getProducts('search', searchValue)
+          return this.productsService.getProducts('products/search', searchValue)
         })
       ).subscribe((val:ProductResponse) => this.productsService.productsSubject.next(val.products))
   }
@@ -87,7 +89,9 @@ export class NavbarComponent implements AfterViewInit, OnInit,OnDestroy{
   }
 
   getUserCartItems(){
-    this.router.navigate([`/home/cart/${this.loggedUserData.id}`]).then()
+    this.cartAuthService.childAuth=true;
+    const user=JSON.parse(<string>localStorage.getItem('loggedUserData'))
+    this.router.navigate([`/home/cart/${user.id}`]).then()
     this.routeToCart=true;
   }
 
@@ -127,9 +131,8 @@ export class NavbarComponent implements AfterViewInit, OnInit,OnDestroy{
     this.routeToCart=false;
   }
 
-  protected adminSelectedUser(userId:string){
-    // this.router.navigate([`/home/cart/${userId}`]).then()
-    localStorage.setItem('adminSelectedUser',userId)
+  protected adminSelectedUser(user:User){
+    localStorage.setItem('loggedUserData',JSON.stringify(user))
   }
 
 }

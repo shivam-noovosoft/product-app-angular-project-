@@ -5,6 +5,7 @@ import {LoginComponent} from './components/login/login.component';
 import {HomeComponent} from './components/home/home.component';
 import {AuthService} from './services/auth.service';
 import {CartItemsComponent} from './components/cart-items/cart-items.component';
+import {CartAuthService} from './services/auth.service';
 
 export const routes: Routes = [
   {path: '', component: AppComponent, title: 'App-Page'},
@@ -15,7 +16,7 @@ export const routes: Routes = [
     children: [
       {path: 'products', component: ProductComponent, title: 'Product-details'},
       {path: '', redirectTo: 'products', pathMatch: 'full'},
-      {path: 'cart/:userId', component: CartItemsComponent, title: 'cart-items'},
+      {path: 'cart/:userId', component: CartItemsComponent, title: 'cart-items',canActivate: [CartAuthService]},
     ]
   },
 ]

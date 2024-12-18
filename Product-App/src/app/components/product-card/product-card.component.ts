@@ -22,7 +22,4 @@ export class ProductCardComponent {
     setTheme('bs5')
   }
 
-  addToCart(item: Product) {
-    this.sendCartData.emit(JSON.stringify(item))
-  }
 }

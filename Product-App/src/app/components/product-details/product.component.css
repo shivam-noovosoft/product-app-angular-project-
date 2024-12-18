@@ -15,10 +15,16 @@
 .addBtn{
   min-width: 50%;
   height: 2em;
-  border-radius: 10px;
   border: none;
-  background-color: #54e697;;
-  color:black;
+  background-color: #5cb85c;;
+  color:white;
+}
+.removeBtn{
+  min-width: 50%;
+  height: 2em;
+  border: none;
+  background-color:#d9534f;
+  color:whitesmoke;
 }
 
 .productsListDiv{
