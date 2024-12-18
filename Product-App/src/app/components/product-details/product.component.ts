@@ -94,7 +94,12 @@ export class ProductComponent implements OnInit {
 
   private filterProductList() {
     const user = JSON.parse(<string>localStorage.getItem('loggedUserData'))
-    const cartItems = JSON.parse(<string>localStorage.getItem(`${user.id}`))
+    let cartItems = JSON.parse(<string>localStorage.getItem(`${user.id}`))
+    if(!cartItems){
+      cartItems=[]
+      this.filteredProductList=this.products
+      return;
+    }
     this.filteredProductList = this.products.map(product => {
       const isItemIncluded = cartItems.some((item: Product) => item.id === product.id)
       if (isItemIncluded) {

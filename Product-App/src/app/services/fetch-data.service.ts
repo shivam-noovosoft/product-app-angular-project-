@@ -16,7 +16,6 @@ export class FetchDataService {
 
   fetchData(endPoint: string, queryParams: string): Observable<unknown> {
     if (queryParams === null || queryParams === undefined) {
-      console.log('without queryParams');
       return this.http.get(`${this.baseUrl}${endPoint}`)
     }
       return this.http.get(`${this.baseUrl}${endPoint}`, {
