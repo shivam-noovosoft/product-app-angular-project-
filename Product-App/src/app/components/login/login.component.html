@@ -1,5 +1,5 @@
 <main class="mainDiv">
-  <form class="formDiv"  (ngSubmit)="login(selectedUser.value)">
+  <form class="formDiv"  (ngSubmit)="login(selectedUser.value,password.value)">
     <img src='assets/grp-login-profile.png' alt="group icon">
     <ng-select
       #selectedUser='ngModel' ngModel class="custom-select" placeholder="Select user" name="select" required>

@@ -20,7 +20,7 @@ nav {
 
 .userNameAndInputDiv > input {
   width: 50%;
-  height:2em;
+  height:2.2em;
   border: none;
   outline: none;
   background-color:whitesmoke;
@@ -46,7 +46,7 @@ nav {
 
 .navDiv-1 > button,.backBtn{
   min-width: 5em;
-  height:2em;
+  height:1.8em;
   background-color: white;
   border: none;
   /*border-radius: 10px;*/
@@ -140,7 +140,7 @@ nav {
     width: 100%;
   }
   .navDiv-1>button{
-    height:2.4em;
+    height:2.2em;
   }
 
 }

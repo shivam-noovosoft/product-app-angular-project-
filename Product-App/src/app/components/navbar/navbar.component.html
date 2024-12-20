@@ -1,15 +1,17 @@
 <nav>
   <div class="userNameAndInputDiv">
-      <ng-select class="userSelect"
-                 clearable="false"
-                 #selectedUser='ngModel' [(ngModel)]="selectUser"
-                 (ngModelChange)="adminSelectedUser(selectedUser.value)"
-                 *ngIf="loggedUserData.firstName==='admin'"
-                 placeholder="Select user">
-        @for (user of users; track user.id) {
-          <ng-option [value]="user">{{ user.firstName }} {{ user.lastName }}</ng-option>
-        }
-      </ng-select>
+    <ng-select class="userSelect"
+               clearable="false"
+               #selectedUser='ngModel' [(ngModel)]="selectUser"
+               (ngModelChange)="adminSelectedUser(selectedUser.value)"
+               *ngIf="loggedUserData.firstName==='admin'"
+               placeholder="Select user">
+      @for (user of users; track user.id) {
+        <ng-option [value]="user">
+          {{ user.firstName }} {{ user.lastName }}
+        </ng-option>
+      }
+    </ng-select>
     <span *ngIf="loggedUserData.firstName!=='admin'">{{ loggedUserData.firstName }} {{ loggedUserData.lastName }}</span>
     <input type="text" placeholder="Search products...." #searchValue='ngModel' ngModel
            *ngIf="!routeToCart"/>
@@ -18,10 +20,8 @@
     <div class="categoryDiv">
       <ng-select
         placeholder="Show all"
-        #cat='ngModel'
-        (clear)="resetSelect()"
-        [(ngModel)]="selectedCategory" id="select"
-        (ngModelChange)="getProductByCategory(cat)">
+        id="select"
+      (change)="getProductByCategory($event)">
         @for (category of categories; track category.slug) {
           <ng-option [value]="category.slug">{{ category.name }}</ng-option>
         }

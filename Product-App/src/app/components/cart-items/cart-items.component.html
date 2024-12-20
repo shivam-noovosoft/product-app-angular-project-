@@ -1,4 +1,10 @@
 <div class="mainDiv">
   <h4 *ngIf="cartItems.length<=0">No Items in the cart</h4>
-<app-product-card *ngFor="let product of cartItems"  [product]="product" id="product-card"></app-product-card>
+  <app-product-card *ngFor="let product of filteredCartItems" [product]="product" id="product-card">
+  <span  class="removeBtn">
+      <button (click)="deleteItem(product)">-</button>
+    {{ product.quantity }}
+    <button (click)="addItem(product)">+</button>
+    </span>
+  </app-product-card>
 </div>

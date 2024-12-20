@@ -4,8 +4,9 @@ import {ProductsService} from '../../services/products.service';
 import {ProductCardComponent} from '../product-card/product-card.component';
 import {Product, ProductResponse} from '../../models/products.models';
 import {User} from '../../models/users.models';
-import {FetchDataService} from '../../services/fetch-data.service';
+import {ApiCallsService} from '../../services/api-calls.service';
 import {LoggedUserService} from '../../services/loggedUser.service';
+import {VoidFnService} from '../../services/filteredProductList.service';
 
 
 @Component({
@@ -15,7 +16,7 @@ import {LoggedUserService} from '../../services/loggedUser.service';
   templateUrl: './product.component.html',
   styleUrl: './product.component.css'
 })
-export class ProductComponent implements OnInit,AfterViewInit,DoCheck {
+export class ProductComponent implements OnInit, AfterViewInit, DoCheck {
 
   products: Product[] = [];
   userCart: Product[] = [];
@@ -24,13 +25,17 @@ export class ProductComponent implements OnInit,AfterViewInit,DoCheck {
 
   constructor(
     @Inject(ProductsService) private productService: ProductsService,
-    private fetchDataService: FetchDataService,
-    private loggedUserService: LoggedUserService
+    private fetchDataService: ApiCallsService,
+    private loggedUserService: LoggedUserService,
+    private voidFnService: VoidFnService
   ) {
   }
 
   ngOnInit() {
     this.init();
+    this.voidFnService.notification.subscribe(val => {
+      this.getLoggedUserData()
+    })
   }
 
   ngDoCheck() {
@@ -47,18 +52,31 @@ export class ProductComponent implements OnInit,AfterViewInit,DoCheck {
   }
 
   addToCart(item: Product) {
-    this.userCart.push(item)
-    const user = JSON.parse(<string>localStorage.getItem('loggedUserData'))
+    const user = this.loggedUserService.get()
+    const inCart = this.userCart.find(product => product.id === item.id)
+    if (!inCart) {
+      this.userCart.push({...item, quantity: 1})
+    } else {
+      inCart.quantity++
+    }
     localStorage.setItem(`${user.id}`, JSON.stringify(this.userCart))
   }
 
   removeFromCart(item: Product) {
-    const user = JSON.parse(<string>localStorage.getItem('loggedUserData'))
-    const cart = JSON.parse(<string>localStorage.getItem(`${user.id}`))
+    const loggedUser = this.loggedUserService.get()
+    const deleteItem = this.userCart.find((product: Product) => product.id === item.id);
+    if (deleteItem?.quantity === 1) {
+      const index = this.userCart.findIndex((product: Product) => product.id === item.id)
+      this.userCart.splice(index, 1)
+    } else {
+      deleteItem!.quantity -= 1;
+    }
+    localStorage.setItem(`${loggedUser.id}`, JSON.stringify(this.userCart))
+    this.filterProductList()
   }
 
   private fetchProducts() {
-    this.productService.getProducts('products', '').subscribe((products: ProductResponse) => {
+    this.productService.getProducts('products').subscribe((products: ProductResponse) => {
       this.productService.productsSubject.next(products.products);
     })
   }
@@ -72,20 +90,14 @@ export class ProductComponent implements OnInit,AfterViewInit,DoCheck {
     })
   }
 
-
   getLoggedUserData() {
-    this.loggedUserService.loggedUser.subscribe((loggedUser: User) => {
-      if (!loggedUser) {
-        return;
-      }
-      this.loggedUser = loggedUser
-      this.updateUserCartFromLocalStorage()
-    })
+    this.loggedUser = this.loggedUserService.get()
+    this.updateUserCartFromLocalStorage()
   }
 
   private updateUserCartFromLocalStorage() {
     const localSto = JSON.parse(<string>localStorage.getItem(`${this.loggedUser.id}`))
-    if (localSto===null || localSto===undefined) {
+    if (localSto === null || localSto === undefined) {
       this.userCart = []
       this.filteredProductList = this.products
       return;
@@ -110,35 +122,16 @@ export class ProductComponent implements OnInit,AfterViewInit,DoCheck {
 
   private filterProductList() {
     this.filteredProductList = this.products.map(product => {
-      const isItemIncluded = this.userCart.some((item: Product) => item.id === product.id)
-      return {...product, inCart: isItemIncluded}
+      const isItemIncluded = this.userCart.find((item: Product) => item.id === product.id)
+      if(isItemIncluded){
+      return {...isItemIncluded, inCart: true}
+      }else{
+      return {...product, inCart: false,quantity:0}
+      }
     })
-    this.productService.productsSubject.next(this.filteredProductList)
   }
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

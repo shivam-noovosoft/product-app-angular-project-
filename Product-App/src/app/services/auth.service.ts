@@ -1,18 +1,18 @@
-import {Component, Injectable} from '@angular/core';
-import {
-  ActivatedRouteSnapshot,
-  CanActivate,
-  CanActivateChild,
-  GuardResult,
-  MaybeAsync,
-  RouterStateSnapshot
-} from '@angular/router';
+import {Injectable} from '@angular/core';
+import {CanActivate,Router} from '@angular/router';
 
 @Injectable({providedIn: 'root'})
 export class AuthService implements CanActivate{
-  auth:boolean=true;
+
+  auth:boolean=false;
+  constructor(private router: Router) {
+  }
   canActivate():boolean{
-    return this.auth;
+    if(!this.auth){
+      this.router.navigate(['login']).then();
+      return false
+    }
+    return true;
   }
 }
 
@@ -20,8 +20,14 @@ export class AuthService implements CanActivate{
 @Injectable({providedIn: 'root'})
 export class CartAuthService implements CanActivate{
   childAuth:boolean=false;
+  constructor(private router: Router) {}
+
   canActivate():boolean{
-    return this.childAuth;
+    if(!this.childAuth){
+    this.router.navigate(['home']).then()
+      return false
+    }
+    return true;
   }
 }
 

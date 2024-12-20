@@ -1,19 +1,30 @@
 import {Injectable,} from '@angular/core';
 import {BehaviorSubject,Subject, Observable} from 'rxjs';
-import {FetchDataService} from './fetch-data.service';
+import {ApiCallsService} from './api-calls.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductsService {
+  baseUrl: string = 'https://dummyjson.com/'
   public productsSubject = new BehaviorSubject<any>(null);
   public userChange=new Subject<void>()
-  constructor(private fetchDataService: FetchDataService) {
+  constructor(private fetchDataService: ApiCallsService) {
   }
 
-  getProducts(endPoint:string,val: string):Observable<any>{
-    return this.fetchDataService.fetchData(endPoint,val);
+  getProducts(endPoint:string):Observable<any>{
+    const string=`${this.baseUrl}${endPoint}`
+    return this.fetchDataService.get(string,'');
   }
 
+  getProductsByCategory(endPoint:string):Observable<any>{
+    const string=`${this.baseUrl}${endPoint}`
+    return this.fetchDataService.get(string,'');
+  }
+
+  getProductsBySearch(endPoint:string,val: string):Observable<any>{
+    const str=`${this.baseUrl}${endPoint}`
+    return this.fetchDataService.get(str,val);
+  }
 }
 

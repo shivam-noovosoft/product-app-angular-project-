@@ -7,6 +7,8 @@ import {FormControl, FormsModule, NgModel} from '@angular/forms';
 import {Router} from '@angular/router';
 import {AuthService} from '../../services/auth.service';
 import {LoggedUserService} from '../../services/loggedUser.service';
+import {response} from 'express';
+import {log} from 'node:util';
 
 @Component({
   standalone: true,
@@ -19,13 +21,14 @@ import {LoggedUserService} from '../../services/loggedUser.service';
 })
 export class LoginComponent implements OnInit {
   users!: User[];
-  selectedUsers!:any;
-  adminData={id:0,firstName:'admin'}
-  router=inject(Router)
-  constructor(@Inject(UsersService) private usersService: UsersService,
-              private authService:AuthService,
-              private loggedUserService:LoggedUserService,
-  ) {}
+  selectedUsers!: any;
+  response!:Response
+  adminData = {id: 0, firstName: 'admin'}
+  router = inject(Router)
+
+  constructor(
+    @Inject(UsersService) private usersService: UsersService,
+  ) { }
 
   ngOnInit() {
     this.fetchUsers()
@@ -38,19 +41,27 @@ export class LoginComponent implements OnInit {
     )
   }
 
-  private updateUsers(){
-    this.usersService.allUsers.subscribe((users:User[])=>{
-      this.users= users;
+  private updateUsers() {
+    this.usersService.allUsers.subscribe((users: User[]) => {
+      this.users = users;
     })
   }
 
-  protected login(user:any){
-    this.authService.auth=true;
-    this.loggedUserService.loggedUser.next(user)
-    localStorage.setItem('loggedUserData',JSON.stringify(user))
-    this.router.navigate(['/home']).then()
+  protected login(user:User, password: string) {
+    // this.usersService.loginUser(user.username, password).subscribe(response=>
+    //   this.response = response
+
+    console.log(response)
+    // this.authService.auth=true;
+    // localStorage.setItem('loggedUserData',JSON.stringify(user))
+    // this.loggedUserService.set(user)
+    // this.router.navigate(['/home']).then()
   }
 
+  checkPass(user: User, password: string) {
+    console.log(user, password)
+    const userData = this.users.find(user => user.id == user.id)
+  }
 
 }
 

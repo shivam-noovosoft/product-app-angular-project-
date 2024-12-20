@@ -13,3 +13,24 @@
 #product-card{
   width:13em;
 }
+
+.removeBtn{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  min-width: 35%;
+  height: 2em;
+  border: none;
+  background-color:#d9534f;
+  color:white;
+  text-align: center;
+}
+.removeBtn>button{
+  border: none;
+  background-color: transparent;
+  font-size: large;
+}
+
+.removeBtn>button:hover{
+  background-color: #e30e09;
+}

@@ -1,8 +1,20 @@
 import {Injectable} from '@angular/core';
 import {BehaviorSubject} from 'rxjs';
+import {User} from '../models/users.models';
 
 
 @Injectable({providedIn: 'root'})
 export class LoggedUserService {
-  loggedUser=new BehaviorSubject<any>(null)
+
+  loggedUser:User=JSON.parse(<string>localStorage.getItem("loggedUserData"));
+
+  set(user:User){
+    this.loggedUser=user;
+  }
+
+  get(){
+    return this.loggedUser
+  }
+
 }
+

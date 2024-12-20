@@ -1,12 +1,20 @@
 <div class="mainDiv">
-    <img [src]="product.images[0]" class="image">
+  <img [src]="product.images[0]" class="image">
   <ul class="ul">
     <li style="font-weight:bolder">{{ product.title }}</li>
-    <li style="font-weight:bold">{{ product.price | currency}}</li>
-    <li style="font-size:small">{{ product.description | ellipses }}</li>
-<!--    <li style="color: black">{{ product.description}}</li>-->
-    <li style="font-size:small">Rating:{{ product.rating}}/5</li>
+    <li id="starRating">
+      {{ product.rating }}
+      <img class="starImg" src="assets/star.png" alt="star image">
+    </li>
+    <li style="font-weight:bold" >
+      {{ (product.price * product.discountPercentage) / 100 | currency }}
+       <span class="originalPrice" style="font-weight: normal" [style.font-size.px]="12">
+      {{ product.price | currency }}
+      </span>
+    </li>
+    <li style="font-size:small">
+      {{ product.description | ellipses }}
+    </li>
     <ng-content></ng-content>
-<!--    <button type="button" id="cartBtn" (click)="addToCart(product)">Add to cart</button>-->
   </ul>
 </div>
