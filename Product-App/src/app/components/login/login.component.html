@@ -1,18 +1,20 @@
 <main class="mainDiv">
-  <form class="formDiv"  (ngSubmit)="login(selectedUser.value,password.value)">
+  <form class="formDiv" (ngSubmit)="login(selectedUser.value,password.value)">
     <img src='assets/grp-login-profile.png' alt="group icon">
     <ng-select
-      #selectedUser='ngModel' ngModel class="custom-select" placeholder="Select user" name="select" required>
-        <ng-option [value]="adminData" >Admin</ng-option>
-        <ng-option [value]="user" *ngFor="let user of users">{{ user.firstName }} {{ user.lastName }}</ng-option>
+      #selectedUser='ngModel' [(ngModel)]="selected" class="custom-select" placeholder="Select user" name="select"
+      required>
+      <ng-option [value]="user" *ngFor="let user of users">{{ user.firstName }} {{ user.lastName }}</ng-option>
     </ng-select>
     <input type="password" name="input"
            #password='ngModel' ngModel
            placeholder="Enter your password" id="pass"
            minlength="5" required>
+    <span *ngIf="error">{{ error.error['message'] }}</span>
     <button class="loginBtn"
-    [disabled]="selectedUser.invalid || password.invalid"
+            [disabled]="selectedUser.invalid || password.invalid"
             type="submit"
-    >LOGIN</button>
+    >LOGIN
+    </button>
   </form>
 </main>

@@ -1,32 +1,45 @@
 <nav>
   <div class="userNameAndInputDiv">
+    <span *ngIf="loggedUserData.firstName!=='admin'">
+      {{ loggedUserData.firstName }} {{ loggedUserData.lastName }}
+    </span>
+
     <ng-select class="userSelect"
                clearable="false"
                #selectedUser='ngModel' [(ngModel)]="selectUser"
                (ngModelChange)="adminSelectedUser(selectedUser.value)"
-               *ngIf="loggedUserData.firstName==='admin'"
+               *ngIf="loggedUserData.role === 'admin'"
                placeholder="Select user">
+
       @for (user of users; track user.id) {
         <ng-option [value]="user">
           {{ user.firstName }} {{ user.lastName }}
         </ng-option>
       }
+
     </ng-select>
-    <span *ngIf="loggedUserData.firstName!=='admin'">{{ loggedUserData.firstName }} {{ loggedUserData.lastName }}</span>
-    <input type="text" placeholder="Search products...." #searchValue='ngModel' ngModel
+
+    <input type="text" placeholder="Search products...."
+           [formControl]="searchValue"
            *ngIf="!routeToCart"/>
   </div>
+
   <div class="navDiv-1" *ngIf="!routeToCart">
     <div class="categoryDiv">
       <ng-select
         placeholder="Show all"
+        #category='ngModel' [(ngModel)]="selectedCategory"
         id="select"
-      (change)="getProductByCategory($event)">
+        (clear)="resetCategorySelect()"
+        (ngModelChange)="getProductByCategory(category.value)">
+
         @for (category of categories; track category.slug) {
           <ng-option [value]="category.slug">{{ category.name }}</ng-option>
         }
+
       </ng-select>
     </div>
+
     <button id="cartBtn" (click)="getUserCartItems()">
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="25">
         <path
@@ -34,8 +47,10 @@
       </svg>
       Cart
     </button>
+
     <button (click)="logout()">Logout</button>
   </div>
+
   <button (click)="backToProductPage()" *ngIf="routeToCart" class="backBtn">Back</button>
 </nav>
 

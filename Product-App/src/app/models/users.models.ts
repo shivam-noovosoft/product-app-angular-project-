@@ -68,3 +68,12 @@ interface Hair {
   color: string;
   type: string;
 }
+
+export interface ResponseError {
+  error: Record<string, any>;
+  headers?: Record<string, any>;
+  message?: string;
+  name?: string;
+  ok?:boolean
+  status?:number;
+}

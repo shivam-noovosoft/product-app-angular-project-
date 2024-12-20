@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {ApiCallsService} from './api-calls.service';
+import {ApiService} from './api.service';
 import {BehaviorSubject, Observable} from 'rxjs';
 
 @Injectable({
@@ -8,10 +8,11 @@ import {BehaviorSubject, Observable} from 'rxjs';
 export class UsersService {
 
   public allUsers=new BehaviorSubject<any>(null);
-  constructor(private apiCallsService: ApiCallsService ) { }
 
-  getUsers(endPoint:string,val:string):Observable<any>{
-    return this.apiCallsService.get(`https://dummyjson.com/${endPoint}`,val)
+  constructor(private apiCallsService: ApiService ) { }
+
+  getUsers(endPoint:string):Observable<any>{
+    return this.apiCallsService.get(`https://dummyjson.com/${endPoint}`)
   }
 
   loginUser(userName:string,password:string):Observable<any>{

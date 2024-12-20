@@ -2,40 +2,41 @@ import {Component, inject, Inject, OnInit} from '@angular/core';
 import {UsersService} from '../../services/users.service';
 import {User, UserResponse} from '../../models/users.models';
 import {NgOptionComponent, NgSelectComponent} from '@ng-select/ng-select';
-import {NgForOf} from '@angular/common';
-import {FormControl, FormsModule, NgModel} from '@angular/forms';
+import {NgForOf, NgIf} from '@angular/common';
+import {FormsModule,} from '@angular/forms';
 import {Router} from '@angular/router';
-import {AuthService} from '../../services/auth.service';
 import {LoggedUserService} from '../../services/loggedUser.service';
-import {response} from 'express';
-import {log} from 'node:util';
+import {ResponseError} from '../../models/users.models'
+import {AuthService} from '../../services/auth.service';
 
 @Component({
   standalone: true,
   selector: 'app-login',
   imports: [
-    NgSelectComponent, NgForOf, NgOptionComponent, FormsModule
+    NgSelectComponent, NgForOf, NgOptionComponent, FormsModule, NgIf
   ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
 export class LoginComponent implements OnInit {
   users!: User[];
-  selectedUsers!: any;
-  response!:Response
-  adminData = {id: 0, firstName: 'admin'}
+  error!: ResponseError
   router = inject(Router)
+  selected!: string
 
   constructor(
     @Inject(UsersService) private usersService: UsersService,
-  ) { }
+    private loggedUserService: LoggedUserService,
+    private authService: AuthService
+  ) {
+  }
 
   ngOnInit() {
-    this.fetchUsers()
+    this._fetchUsers()
     this.updateUsers()
   }
 
-  private fetchUsers() {
+  private _fetchUsers() {
     this.usersService.getUsers('users', '').subscribe(
       (value: UserResponse) => this.usersService.allUsers.next(value.users),
     )
@@ -47,20 +48,35 @@ export class LoginComponent implements OnInit {
     })
   }
 
-  protected login(user:User, password: string) {
-    // this.usersService.loginUser(user.username, password).subscribe(response=>
-    //   this.response = response
-
-    console.log(response)
-    // this.authService.auth=true;
-    // localStorage.setItem('loggedUserData',JSON.stringify(user))
-    // this.loggedUserService.set(user)
-    // this.router.navigate(['/home']).then()
+  showWarning(error: ResponseError) {
+    this.error = error
+    setTimeout(() => {
+      this.error = {error: {message: ''}}
+    }, 1000)
   }
 
-  checkPass(user: User, password: string) {
-    console.log(user, password)
-    const userData = this.users.find(user => user.id == user.id)
+
+  protected login(user: User, password: string) {
+    if (user.firstName === 'admin') {
+      if (password !== 'admin') {
+        this.showWarning({error: {message: 'invalid credentials'}})
+        return;
+      }
+      this.authService.auth = true;
+      localStorage.setItem('loggedUserData', JSON.stringify(user))
+      this.loggedUserService.set(user)
+      void this.router.navigate(['/home'])
+      return;
+    }
+    this.usersService.loginUser(user.username, password).subscribe({
+      next: () => {
+        this.authService.auth = true;
+        this.loggedUserService.set(user)
+        localStorage.setItem('loggedUserData', JSON.stringify(user))
+        void this.router.navigate(['/home'])
+      },
+      error: error => this.showWarning(error)
+    })
   }
 
 }

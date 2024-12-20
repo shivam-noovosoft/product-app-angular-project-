@@ -1,50 +1,50 @@
 import {AfterViewInit, Component, DoCheck, Inject, OnDestroy, OnInit} from '@angular/core';
-import {NgForOf, NgIf} from '@angular/common';
+import {AsyncPipe, NgForOf, NgIf} from '@angular/common';
 import {ProductsService} from '../../services/products.service';
 import {ProductCardComponent} from '../product-card/product-card.component';
 import {Product, ProductResponse} from '../../models/products.models';
 import {User} from '../../models/users.models';
-import {ApiCallsService} from '../../services/api-calls.service';
+import {ApiService} from '../../services/api.service';
 import {LoggedUserService} from '../../services/loggedUser.service';
-import {VoidFnService} from '../../services/filteredProductList.service';
+import {VoidFnService} from '../../services/notification.service';
+import {LoaderComponent} from '../loader/loader.component';
 
 
 @Component({
   standalone: true,
   selector: 'app-product-details',
-  imports: [NgForOf, ProductCardComponent, NgIf],
+  imports: [NgForOf, ProductCardComponent, NgIf, AsyncPipe, LoaderComponent],
   templateUrl: './product.component.html',
   styleUrl: './product.component.css'
 })
-export class ProductComponent implements OnInit, AfterViewInit, DoCheck {
+export class ProductComponent implements OnInit {
 
   products: Product[] = [];
   userCart: Product[] = [];
   loggedUser!: User
-  filteredProductList!: Product[];
+  loading!: boolean;
+  filteredProductList: Product[] = [];
 
   constructor(
     @Inject(ProductsService) private productService: ProductsService,
-    private fetchDataService: ApiCallsService,
+    private fetchDataService: ApiService,
     private loggedUserService: LoggedUserService,
-    private voidFnService: VoidFnService
+    private voidFnService: VoidFnService,
   ) {
   }
 
   ngOnInit() {
     this.init();
     this.voidFnService.notification.subscribe(val => {
+      console.log('voidFnCalled')
       this.getLoggedUserData()
     })
-  }
-
-  ngDoCheck() {
-    this.filterProductList()
-  }
-
-  ngAfterViewInit() {
+    this.fetchDataService.loadingSubject.subscribe(loading =>
+      this.loading = loading
+    )
     this.getLoggedUserData()
   }
+
 
   private init() {
     this.fetchProducts();
@@ -87,23 +87,26 @@ export class ProductComponent implements OnInit, AfterViewInit, DoCheck {
         return;
       }
       this.products = products;
+      this.filterProductList()
     })
   }
 
   getLoggedUserData() {
     this.loggedUser = this.loggedUserService.get()
-    this.updateUserCartFromLocalStorage()
+    this.updateUserCartFromLocalStorage(this.loggedUser)
   }
 
-  private updateUserCartFromLocalStorage() {
-    const localSto = JSON.parse(<string>localStorage.getItem(`${this.loggedUser.id}`))
-    if (localSto === null || localSto === undefined) {
+  private updateUserCartFromLocalStorage(user: User) {
+
+    const userCart = JSON.parse(<string>localStorage.getItem(`${user.id}`))
+
+    if (userCart === null || userCart === undefined) {
       this.userCart = []
       this.filteredProductList = this.products
       return;
     }
     this.userCart = JSON.parse(<string>localStorage.getItem(`${this.loggedUser.id}`));
-    this.filterProductList()
+    // this.filterProductList()
   }
 
   protected fetchNextProducts() {
@@ -121,14 +124,17 @@ export class ProductComponent implements OnInit, AfterViewInit, DoCheck {
   }
 
   private filterProductList() {
+    this.fetchDataService.loadingSubject.next(true)
     this.filteredProductList = this.products.map(product => {
       const isItemIncluded = this.userCart.find((item: Product) => item.id === product.id)
-      if(isItemIncluded){
-      return {...isItemIncluded, inCart: true}
-      }else{
-      return {...product, inCart: false,quantity:0}
+      if (isItemIncluded) {
+        return {...isItemIncluded, inCart: true}
+      } else {
+        return {...product, inCart: false, quantity: 0}
       }
     })
+    this.fetchDataService.loadingSubject.next(false)
+    console.log('flickering')
   }
 
 }

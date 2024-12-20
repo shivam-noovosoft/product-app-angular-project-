@@ -1,6 +1,7 @@
 <div class="mainDiv">
-  <h1 *ngIf="products.length<=0">No Products related to search</h1>
-  <div class="productsListDiv">
+  <app-loader *ngIf="loading"></app-loader>
+  <div class="productsListDiv" *ngIf="!loading">
+    <!--    <h2 *ngIf="filteredProductList.length<1">No Products related to this search</h2>-->
     <app-product-card *ngFor="let product of filteredProductList" [product]="product" id="product-card">
     <span *ngIf="product.inCart" class="removeBtn">
       <button (click)="removeFromCart(product)">-</button>
@@ -12,7 +13,7 @@
       </button>
     </app-product-card>
   </div>
-  <div class="paginationDiv">
+  <div class="paginationDiv" *ngIf="filteredProductList.length>0">
     <button (click)="fetchPreviousProducts()"><<</button>
     <hr>
     <button (click)="fetchNextProducts()">>></button>

@@ -1,7 +1,7 @@
-import {Component, ViewChild, AfterViewInit, OnInit, OnDestroy} from '@angular/core';
+import {Component,AfterViewInit, OnInit, OnDestroy, DoCheck} from '@angular/core';
 import {ProductsService} from '../../services/products.service';
-import {FormControl, FormsModule, NgModel} from '@angular/forms';
-import {switchMap} from 'rxjs';
+import {FormControl, FormsModule, NgModel, ReactiveFormsModule} from '@angular/forms';
+import {switchMap, tap} from 'rxjs';
 import {Category, ProductResponse} from '../../models/products.models';
 import {CartAuthService} from '../../services/auth.service';
 import {NgForOf, NgIf} from '@angular/common';
@@ -16,7 +16,8 @@ import {User, UserResponse} from '../../models/users.models';
 import {AuthService} from '../../services/auth.service';
 import {UsersService} from '../../services/users.service';
 import {LoggedUserService} from '../../services/loggedUser.service';
-import {VoidFnService} from '../../services/filteredProductList.service';
+import {VoidFnService} from '../../services/notification.service';
+import {ApiService} from '../../services/api.service';
 
 @Component({
   standalone: true,
@@ -28,41 +29,51 @@ import {VoidFnService} from '../../services/filteredProductList.service';
     NgLabelTemplateDirective,
     NgSelectComponent,
     NgOptionComponent,
-    NgIf
+    NgIf,
+    ReactiveFormsModule
   ],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
-export class NavbarComponent implements OnInit, OnDestroy, AfterViewInit {
+export class NavbarComponent implements OnInit, OnDestroy, AfterViewInit,DoCheck {
 
-  selectedCategory!: Category;
   categories!: Category[]
+  selectedCategory!:string
   loggedUserData!: User;
   users!: User[];
   routeToCart: boolean = false;
   selectUser: any;
-  @ViewChild('searchValue') searchValue!: FormControl;
+  searchValue=new FormControl<string>('')
 
   constructor(
     private productsService: ProductsService,
-    private router: Router, private authService: AuthService,
+    private router: Router,
+    private authService: AuthService,
     private usersService: UsersService,
     private cartAuthService: CartAuthService,
     protected loggedUserService: LoggedUserService,
-    private voidFnService:VoidFnService
+    private voidFnService: VoidFnService,
+    private apiService: ApiService,
   ) {
   }
 
   ngOnInit() {
     this.getLoggedUserData()
+    this.searchValue.valueChanges?.pipe(
+      tap(()=>this.apiService.loadingSubject.next(true)),
+      switchMap(searchValue => {
+        return this.productsService.getProductsBySearch('products/search', searchValue as string)
+      })
+    ).subscribe((val: ProductResponse) => {
+      this.apiService.loadingSubject.next(false)
+      this.productsService.productsSubject.next(val.products)
+    })
+  }
+
+  ngDoCheck() {
   }
 
   ngAfterViewInit() {
-    // this.searchValue.valueChanges?.pipe(
-    //   switchMap(searchValue => {
-    //     return this.productsService.getProducts('products/search', searchValue)
-    //   })
-    // ).subscribe((val:ProductResponse) => this.productsService.productsSubject.next(val.products))
   }
 
   ngOnDestroy() {
@@ -70,15 +81,14 @@ export class NavbarComponent implements OnInit, OnDestroy, AfterViewInit {
     // this.usersService.allUsers.unsubscribe()
   }
 
-  getProductByCategory(event:any) {
-    const category = (event.target as HTMLSelectElement).value;
-    console.log("Category", category);
-    // this.productsService.getProductsByCategory(`products/category/${category}`).subscribe((products: ProductResponse) => {
-    //   this.productsService.productsSubject.next(products.products);
-    // })
+
+  getProductByCategory(category: NgModel) {
+    this.productsService.getProductsByCategory(`products/category/${category}`).subscribe((products: ProductResponse) => {
+      this.productsService.productsSubject.next(products.products);
+    })
   }
 
-  resetSelect() {
+  resetCategorySelect() {
     this.productsService.getProducts('products').subscribe((products: ProductResponse) => {
       this.productsService.productsSubject.next(products.products);
     })
@@ -93,7 +103,7 @@ export class NavbarComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   getUserCartItems() {
-    this.cartAuthService.childAuth = true;
+    this.cartAuthService.cartAuth = true;
     const user = this.loggedUserService.get()
     this.router.navigate([`/home/cart/${user.id}`]).then()
     this.routeToCart = true;
@@ -112,7 +122,7 @@ export class NavbarComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private fetchUsers() {
-    this.usersService.getUsers('users', '').subscribe(
+    this.usersService.getUsers('users').subscribe(
       (value: UserResponse) => this.usersService.allUsers.next(value.users),
     )
   }
@@ -124,12 +134,11 @@ export class NavbarComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private setUsers() {
-    if (this.loggedUserData.firstName === "admin") {
+    if (this.loggedUserData.role === "admin") {
       this.fetchUsers()
       this.updateUsers()
       return;
     }
-    return;
   }
 
   protected backToProductPage() {

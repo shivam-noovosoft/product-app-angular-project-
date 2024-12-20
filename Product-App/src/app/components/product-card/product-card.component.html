@@ -1,14 +1,15 @@
 <div class="mainDiv">
-  <img [src]="product.images[0]" class="image">
+  <div class="skeleton image-skeleton" *ngIf="loading"></div>
+  <img [src]="product.images[0]" class="image" *ngIf="!loading">
   <ul class="ul">
     <li style="font-weight:bolder">{{ product.title }}</li>
     <li id="starRating">
       {{ product.rating }}
       <img class="starImg" src="assets/star.png" alt="star image">
     </li>
-    <li style="font-weight:bold" >
+    <li style="font-weight:bold">
       {{ (product.price * product.discountPercentage) / 100 | currency }}
-       <span class="originalPrice" style="font-weight: normal" [style.font-size.px]="12">
+      <span class="originalPrice" style="font-weight: normal" [style.font-size.px]="12">
       {{ product.price | currency }}
       </span>
     </li>
