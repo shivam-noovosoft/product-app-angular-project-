@@ -1,13 +1,12 @@
-import {AfterViewInit, Component, DoCheck, Inject, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {AsyncPipe, NgForOf, NgIf} from '@angular/common';
 import {ProductsService} from '../../services/products.service';
 import {ProductCardComponent} from '../product-card/product-card.component';
 import {Product, ProductResponse} from '../../models/products.models';
 import {User} from '../../models/users.models';
-import {ApiService} from '../../services/api.service';
 import {LoggedUserService} from '../../services/loggedUser.service';
-import {VoidFnService} from '../../services/notification.service';
 import {LoaderComponent} from '../loader/loader.component';
+import {UserChangedNotificationService} from '../../services/notification.service';
 
 
 @Component({
@@ -22,66 +21,68 @@ export class ProductComponent implements OnInit {
   products: Product[] = [];
   userCart: Product[] = [];
   loggedUser!: User
-  loading!: boolean;
+  isLoading!: boolean;
   filteredProductList: Product[] = [];
+  limit: number = 15;
+  skip: number = 0
 
   constructor(
-    @Inject(ProductsService) private productService: ProductsService,
-    private fetchDataService: ApiService,
+    private productService: ProductsService,
     private loggedUserService: LoggedUserService,
-    private voidFnService: VoidFnService,
+    private userChangeNotification: UserChangedNotificationService
   ) {
   }
 
   ngOnInit() {
     this.init();
-    this.voidFnService.notification.subscribe(val => {
-      console.log('voidFnCalled')
-      this.getLoggedUserData()
-    })
-    this.fetchDataService.loadingSubject.subscribe(loading =>
-      this.loading = loading
-    )
-    this.getLoggedUserData()
   }
-
 
   private init() {
-    this.fetchProducts();
-    this.updateProducts();
+    this.getLoggedUserData();
+    this._fetchProducts();
+    this._updateProducts()
   }
 
-  addToCart(item: Product) {
+  protected addToCart(item: Product) {
+    console.log('adding')
     const user = this.loggedUserService.get()
     const inCart = this.userCart.find(product => product.id === item.id)
+    let itemFromList = this.filteredProductList.find(product => product.id === item.id)
     if (!inCart) {
       this.userCart.push({...item, quantity: 1})
+      itemFromList!.quantity = 1
+      itemFromList!.inCart = true
     } else {
       inCart.quantity++
+      itemFromList!.quantity++
     }
     localStorage.setItem(`${user.id}`, JSON.stringify(this.userCart))
   }
 
-  removeFromCart(item: Product) {
+  protected removeFromCart(item: Product) {
+
     const loggedUser = this.loggedUserService.get()
     const deleteItem = this.userCart.find((product: Product) => product.id === item.id);
+    let itemFromList = this.filteredProductList.find(product => product.id === item.id)
+
     if (deleteItem?.quantity === 1) {
       const index = this.userCart.findIndex((product: Product) => product.id === item.id)
+      itemFromList!.inCart = false
       this.userCart.splice(index, 1)
     } else {
       deleteItem!.quantity -= 1;
+      itemFromList!.quantity--
     }
     localStorage.setItem(`${loggedUser.id}`, JSON.stringify(this.userCart))
-    this.filterProductList()
+
   }
 
-  private fetchProducts() {
-    this.productService.getProducts('products').subscribe((products: ProductResponse) => {
+
+  private _fetchProducts() {
+
+    this.productService.getProducts('products', this.limit, this.skip).subscribe((products: ProductResponse) => {
       this.productService.productsSubject.next(products.products);
     })
-  }
-
-  private updateProducts() {
     this.productService.productsSubject.subscribe((products: Product[]) => {
       if (!products) {
         return;
@@ -89,11 +90,23 @@ export class ProductComponent implements OnInit {
       this.products = products;
       this.filterProductList()
     })
+
   }
 
-  getLoggedUserData() {
+  private getLoggedUserData() {
+
     this.loggedUser = this.loggedUserService.get()
     this.updateUserCartFromLocalStorage(this.loggedUser)
+
+  }
+
+  private _updateProducts() {
+
+    this.userChangeNotification.userChangedNotification.subscribe(() => {
+      this.getLoggedUserData()
+      this.filterProductList()
+    })
+
   }
 
   private updateUserCartFromLocalStorage(user: User) {
@@ -106,25 +119,27 @@ export class ProductComponent implements OnInit {
       return;
     }
     this.userCart = JSON.parse(<string>localStorage.getItem(`${this.loggedUser.id}`));
-    // this.filterProductList()
   }
 
   protected fetchNextProducts() {
-    this.fetchDataService.skip += 15
-    this.fetchProducts()
-    this.updateProducts()
+
+    this.skip += 15
+    this._fetchProducts()
     this.filterProductList()
+
   }
 
   protected fetchPreviousProducts() {
-    this.fetchDataService.skip -= 15
-    this.fetchProducts()
-    this.updateProducts()
+
+    this.skip -= 15
+    this._fetchProducts()
     this.filterProductList()
+
   }
 
   private filterProductList() {
-    this.fetchDataService.loadingSubject.next(true)
+
+    this.isLoading = true;
     this.filteredProductList = this.products.map(product => {
       const isItemIncluded = this.userCart.find((item: Product) => item.id === product.id)
       if (isItemIncluded) {
@@ -133,8 +148,8 @@ export class ProductComponent implements OnInit {
         return {...product, inCart: false, quantity: 0}
       }
     })
-    this.fetchDataService.loadingSubject.next(false)
-    console.log('flickering')
+    this.isLoading = false;
+
   }
 
 }

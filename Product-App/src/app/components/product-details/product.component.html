@@ -1,21 +1,22 @@
-<div class="mainDiv">
-  <app-loader *ngIf="loading"></app-loader>
-  <div class="productsListDiv" *ngIf="!loading">
-    <!--    <h2 *ngIf="filteredProductList.length<1">No Products related to this search</h2>-->
+<app-loader *ngIf="isLoading"></app-loader>
+<div class="main-div" *ngIf="!isLoading">
+  <div class="productsList-div">
     <app-product-card *ngFor="let product of filteredProductList" [product]="product" id="product-card">
-    <span *ngIf="product.inCart" class="removeBtn">
+    <span *ngIf="product.inCart" class="control-btn">
       <button (click)="removeFromCart(product)">-</button>
       {{ product.quantity }}
       <button (click)="addToCart(product)">+</button>
     </span>
-      <button *ngIf="!product.inCart" (click)="addToCart(product)" class="addBtn">
+      <button *ngIf="!product.inCart" (click)="addToCart(product)" class="add-btn">
         Add to cart
       </button>
     </app-product-card>
   </div>
-  <div class="paginationDiv" *ngIf="filteredProductList.length>0">
-    <button (click)="fetchPreviousProducts()"><<</button>
-    <hr>
-    <button (click)="fetchNextProducts()">>></button>
+  <div class="pagination-div">
+    <ng-container>
+      <button (click)="fetchPreviousProducts()"><<</button>
+      <hr>
+      <button (click)="fetchNextProducts()">>></button>
+    </ng-container>
   </div>
 </div>

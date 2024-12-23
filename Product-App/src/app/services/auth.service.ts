@@ -1,38 +1,46 @@
-import {Injectable} from '@angular/core';
+import {Injectable, OnInit} from '@angular/core';
 import {CanActivate, Router} from '@angular/router';
+import {User} from '../models/users.models';
+import {BehaviorSubject, Observable} from 'rxjs';
+import {ApiService} from './api.service';
 
 @Injectable({providedIn: 'root'})
-export class AuthService implements CanActivate {
+export class UserAuthService implements CanActivate {
 
-  auth: boolean = true;
+  userAuth: boolean = false;
+  isUserLoggedIn!: User
+  limit: number = 30;
+  skip: number = 0;
 
-  constructor(private router: Router) {
+  allUsers = new BehaviorSubject<any>(null);
+
+  constructor(
+    private router: Router,
+    private apiCallsService: ApiService
+  ) {
   }
 
   canActivate(): boolean {
-    if (!this.auth) {
+
+    this.isUserLoggedIn = JSON.parse(<string>localStorage.getItem('loggedUserData'));
+    this.userAuth = !!this.isUserLoggedIn;
+
+    if (!this.userAuth) {
       void this.router.navigate(['login'])
       return false
     }
     return true;
   }
-}
 
-
-@Injectable({providedIn: 'root'})
-export class CartAuthService implements CanActivate {
-
-  cartAuth: boolean = false;
-
-  constructor(private router: Router) {
+  getUsers(): Observable<any> {
+    return this.apiCallsService.get(`https://dummyjson.com/users`, this.limit, this.skip)
   }
 
-  canActivate(): boolean {
-    if (!this.cartAuth) {
-      void this.router.navigate(['home'])
-      return false
-    }
-    return true;
+  loginUser(userName: string, password: string): Observable<any> {
+    const data = {username: userName, password: password}
+    return this.apiCallsService.post(`https://dummyjson.com/user/login`, data)
   }
+
 }
+
 

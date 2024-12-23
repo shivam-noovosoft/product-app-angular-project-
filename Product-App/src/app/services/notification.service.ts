@@ -2,6 +2,6 @@ import {Injectable} from '@angular/core';
 import {Subject} from 'rxjs';
 
 @Injectable({providedIn: 'root'})
-export class VoidFnService {
-  notification = new Subject<void>()
+export class UserChangedNotificationService {
+  userChangedNotification = new Subject<void>()
 }

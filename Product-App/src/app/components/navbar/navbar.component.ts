@@ -1,23 +1,16 @@
-import {Component,AfterViewInit, OnInit, OnDestroy, DoCheck} from '@angular/core';
-import {ProductsService} from '../../services/products.service';
-import {FormControl, FormsModule, NgModel, ReactiveFormsModule} from '@angular/forms';
+import {Component, OnInit} from '@angular/core';
 import {switchMap, tap} from 'rxjs';
+import {FormControl, FormsModule, NgModel, ReactiveFormsModule} from '@angular/forms';
+import {ProductsService} from '../../services/products.service';
 import {Category, ProductResponse} from '../../models/products.models';
-import {CartAuthService} from '../../services/auth.service';
 import {NgForOf, NgIf} from '@angular/common';
-import {
-  NgOptionTemplateDirective,
-  NgSelectComponent,
-  NgLabelTemplateDirective,
-  NgOptionComponent,
-} from '@ng-select/ng-select';
 import {Router} from '@angular/router';
 import {User, UserResponse} from '../../models/users.models';
-import {AuthService} from '../../services/auth.service';
-import {UsersService} from '../../services/users.service';
+import {UserAuthService} from '../../services/auth.service';
 import {LoggedUserService} from '../../services/loggedUser.service';
-import {VoidFnService} from '../../services/notification.service';
-import {ApiService} from '../../services/api.service';
+import {UserChangedNotificationService} from '../../services/notification.service';
+import {NgSelectComponent, NgOptionComponent,} from '@ng-select/ng-select';
+
 
 @Component({
   standalone: true,
@@ -25,77 +18,66 @@ import {ApiService} from '../../services/api.service';
   imports: [
     FormsModule,
     NgForOf,
-    NgOptionTemplateDirective,
-    NgLabelTemplateDirective,
-    NgSelectComponent,
     NgOptionComponent,
     NgIf,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    NgSelectComponent
   ],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
-export class NavbarComponent implements OnInit, OnDestroy, AfterViewInit,DoCheck {
+export class NavbarComponent implements OnInit {
 
   categories!: Category[]
-  selectedCategory!:string
+  selectedCategory!: string
   loggedUserData!: User;
   users!: User[];
-  routeToCart: boolean = false;
+  isRouteToCartActive: boolean = false;
   selectUser: any;
-  searchValue=new FormControl<string>('')
+  searchValue = new FormControl<string>('')
+  limit: number = 15
+  skip: number = 0
+  isLoading!: boolean;
 
   constructor(
     private productsService: ProductsService,
     private router: Router,
-    private authService: AuthService,
-    private usersService: UsersService,
-    private cartAuthService: CartAuthService,
+    private userAuthService: UserAuthService,
     protected loggedUserService: LoggedUserService,
-    private voidFnService: VoidFnService,
-    private apiService: ApiService,
+    private userChangedNotificationService: UserChangedNotificationService,
   ) {
   }
 
   ngOnInit() {
     this.getLoggedUserData()
     this.searchValue.valueChanges?.pipe(
-      tap(()=>this.apiService.loadingSubject.next(true)),
+      tap(() => this.isLoading = true),
       switchMap(searchValue => {
-        return this.productsService.getProductsBySearch('products/search', searchValue as string)
+        return this.productsService.getProductsBySearch('products/search', this.limit, this.skip, searchValue as string)
       })
     ).subscribe((val: ProductResponse) => {
-      this.apiService.loadingSubject.next(false)
+      this.isLoading = false;
       this.productsService.productsSubject.next(val.products)
     })
   }
 
-  ngDoCheck() {
-  }
-
-  ngAfterViewInit() {
-  }
-
-  ngOnDestroy() {
-    this.routeToCart = false
-    // this.usersService.allUsers.unsubscribe()
-  }
-
-
   getProductByCategory(category: NgModel) {
-    this.productsService.getProductsByCategory(`products/category/${category}`).subscribe((products: ProductResponse) => {
+    if (!category) {
+      return
+    }
+    this.productsService.getProductsByCategory(`products/category/${category}`, this.limit, this.skip).subscribe((products: ProductResponse) => {
       this.productsService.productsSubject.next(products.products);
     })
   }
 
   resetCategorySelect() {
-    this.productsService.getProducts('products').subscribe((products: ProductResponse) => {
+    this.productsService.getProducts('products', this.limit, this.skip).subscribe((products: ProductResponse) => {
       this.productsService.productsSubject.next(products.products);
     })
   }
 
   fetchCategories() {
-    this.productsService.getProductsByCategory('products/categories').subscribe(category => {
+    this.productsService.getProductsByCategory('products/categories', this.limit, this.skip).subscribe(category => {
       if (category) {
         this.categories = category;
       }
@@ -103,10 +85,9 @@ export class NavbarComponent implements OnInit, OnDestroy, AfterViewInit,DoCheck
   }
 
   getUserCartItems() {
-    this.cartAuthService.cartAuth = true;
     const user = this.loggedUserService.get()
-    this.router.navigate([`/home/cart/${user.id}`]).then()
-    this.routeToCart = true;
+    void this.router.navigate([`/cart/${user.id}`])
+    this.isRouteToCartActive = true;
   }
 
   private getLoggedUserData() {
@@ -117,18 +98,18 @@ export class NavbarComponent implements OnInit, OnDestroy, AfterViewInit,DoCheck
 
   protected logout() {
     localStorage.removeItem('loggedUserData')
-    this.authService.auth = true;
-    this.router.navigate(['/login']).then()
+    this.userAuthService.userAuth = false;
+    void this.router.navigate(['/login'])
   }
 
   private fetchUsers() {
-    this.usersService.getUsers('users').subscribe(
-      (value: UserResponse) => this.usersService.allUsers.next(value.users),
+    this.userAuthService.getUsers().subscribe(
+      (value: UserResponse) => this.userAuthService.allUsers.next(value.users),
     )
   }
 
   private updateUsers() {
-    this.usersService.allUsers.subscribe((users: User[]) => {
+    this.userAuthService.allUsers.subscribe((users: User[]) => {
       this.users = users;
     })
   }
@@ -142,13 +123,13 @@ export class NavbarComponent implements OnInit, OnDestroy, AfterViewInit,DoCheck
   }
 
   protected backToProductPage() {
-    this.router.navigate(['home']).then()
-    this.routeToCart = false;
+    void this.router.navigate(['/products'])
+    this.isRouteToCartActive = false;
   }
 
   protected adminSelectedUser(user: User) {
     this.loggedUserService.set(user)
-    this.voidFnService.notification.next()
+    this.userChangedNotificationService.userChangedNotification.next()
   }
 
 }

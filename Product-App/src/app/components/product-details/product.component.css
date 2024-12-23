@@ -1,18 +1,18 @@
-.mainDiv{
+.main-div{
   display:flex;
-  flex-direction: column;
   background-color: #ededed;
+  flex-direction: column;
   min-height:100%;
-  justify-content: center;
   align-items: center;
   gap:1.5em;
-  padding:1em 1em 2em 1em ;
-}
-#product-card{
-  width:70%;
+  padding:1em;
 }
 
-.addBtn{
+#product-card{
+  max-width:50%;
+}
+
+.add-btn{
   min-width: 50%;
   height: 2em;
   border: none;
@@ -20,23 +20,24 @@
   color:white;
 }
 
-.removeBtn{
+.control-btn{
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  min-width: 35%;
+  align-items: center;
+  min-width: 40%;
   height: 2em;
   border: none;
   background-color:#d9534f;
   color:white;
-  text-align: center;
 }
-.removeBtn>button{
+.control-btn>button{
   border: none;
-  background-color: transparent;
+  color: white;
+  background-color:transparent;
   font-size: large;
 }
-.removeBtn>button:hover{
+.control-btn>button:hover{
   background-color: #e30e09;
 }
 
@@ -44,7 +45,7 @@
   background-color:rgb(25 252 22 / 50%); ;
 }
 
-.productsListDiv{
+.productsList-div{
   width: 100%;
   flex-grow: 1;
   display: flex;
@@ -52,12 +53,11 @@
   gap: 1em;
   flex-wrap: wrap;
 }
-.paginationDiv{
-  /*background-color: #007bff;*/
+.pagination-div{
   display:flex;
   gap: 5px;
 }
-.paginationDiv>button{
+.pagination-div>button{
   min-width: 3em;
   height:2em;
   background-color: white;
@@ -67,14 +67,14 @@
   color: #007bff;
 }
 
-.paginationDiv>button:hover{
+.pagination-div>button:hover{
   background-color:  #5cb85c;
   color: white;
   border: none;
 }
 
 @media (min-width:500px) {
-  .mainDiv{
+  .main-div{
     flex-wrap: wrap;
     align-items:center;
     justify-content:center;
