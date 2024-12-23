@@ -4,7 +4,7 @@ import {FormControl, FormsModule, NgModel, ReactiveFormsModule} from '@angular/f
 import {ProductsService} from '../../services/products.service';
 import {Category, ProductResponse} from '../../models/products.models';
 import {NgForOf, NgIf} from '@angular/common';
-import {Router} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {User, UserResponse} from '../../models/users.models';
 import {UserAuthService} from '../../services/auth.service';
 import {LoggedUserService} from '../../services/loggedUser.service';
@@ -34,14 +34,15 @@ export class NavbarComponent implements OnInit {
   users!: User[];
   isRouteToCartActive: boolean = false;
   selectUser: any;
-  searchValue = new FormControl<string>('')
   limit: number = 15
   skip: number = 0
   isLoading!: boolean;
 
+  searchValue = new FormControl<string>('')
+
   constructor(
     private productsService: ProductsService,
-    private router: Router,
+    protected router: Router,
     private userAuthService: UserAuthService,
     protected loggedUserService: LoggedUserService,
     private userChangedNotificationService: UserChangedNotificationService,
@@ -49,6 +50,7 @@ export class NavbarComponent implements OnInit {
   }
 
   ngOnInit() {
+
     this.getLoggedUserData()
     this.searchValue.valueChanges?.pipe(
       tap(() => this.isLoading = true),
@@ -59,6 +61,7 @@ export class NavbarComponent implements OnInit {
       this.isLoading = false;
       this.productsService.productsSubject.next(val.products)
     })
+
   }
 
   getProductByCategory(category: NgModel) {

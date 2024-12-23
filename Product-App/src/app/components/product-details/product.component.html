@@ -13,10 +13,14 @@
     </app-product-card>
   </div>
   <div class="pagination-div">
-    <ng-container>
-      <button (click)="fetchPreviousProducts()"><<</button>
+      <button
+        [disabled]="skip<=0"
+        (click)="fetchPreviousProducts()">
+        <<
+      </button>
       <hr>
-      <button (click)="fetchNextProducts()">>></button>
-    </ng-container>
+      <button (click)="fetchNextProducts()">
+        >>
+      </button>
   </div>
 </div>

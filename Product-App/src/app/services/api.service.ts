@@ -14,13 +14,11 @@ export class ApiService {
 
 
     if (queryParams === null || queryParams === undefined) {
-      return this.http.get(string, {params: {limit: limit, skip: skip}}).pipe(
-      )
+      return this.http.get(string, {params: {limit: limit, skip: skip}})
     }
     return this.http.get(string, {
       params: {q: queryParams, limit: limit, skip: skip}
-    }).pipe(
-    );
+    })
 
   }
 

@@ -25,9 +25,9 @@ export class ProductsService {
     return this.fetchDataService.get(url,limit,skip);
   }
 
-  getProductsBySearch(endPoint:string,limit:number,skip:number,val: string):Observable<any>{
+  getProductsBySearch(endPoint:string,limit:number,skip:number,queryParam: string):Observable<any>{
     const url=`${this.baseUrl}${endPoint}`
-    return this.fetchDataService.get(url,limit,skip,val);
+    return this.fetchDataService.get(url,limit,skip,queryParam);
   }
 }
 

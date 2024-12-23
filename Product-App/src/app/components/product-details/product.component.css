@@ -1,26 +1,26 @@
-.main-div{
-  display:flex;
+.main-div {
+  display: flex;
   background-color: #ededed;
   flex-direction: column;
-  min-height:100%;
+  min-height: 100%;
   align-items: center;
-  gap:1.5em;
-  padding:1em;
+  gap: 1.5em;
+  padding: 1em;
 }
 
-#product-card{
-  max-width:50%;
+#product-card {
+  max-width: 50%;
 }
 
-.add-btn{
+.add-btn {
   min-width: 50%;
   height: 2em;
   border: none;
   background-color: #5cb85c;
-  color:white;
+  color: white;
 }
 
-.control-btn{
+.control-btn {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -28,24 +28,26 @@
   min-width: 40%;
   height: 2em;
   border: none;
-  background-color:#d9534f;
-  color:white;
+  background-color: #d9534f;
+  color: white;
 }
-.control-btn>button{
+
+.control-btn > button {
   border: none;
   color: white;
-  background-color:transparent;
+  background-color: transparent;
   font-size: large;
 }
-.control-btn>button:hover{
+
+.control-btn > button:hover {
   background-color: #e30e09;
 }
 
-.ratingSpan{
-  background-color:rgb(25 252 22 / 50%); ;
+.ratingSpan {
+  background-color: rgb(25 252 22 / 50%);;
 }
 
-.productsList-div{
+.productsList-div {
   width: 100%;
   flex-grow: 1;
   display: flex;
@@ -53,34 +55,45 @@
   gap: 1em;
   flex-wrap: wrap;
 }
-.pagination-div{
-  display:flex;
+
+.pagination-div {
+  display: flex;
   gap: 5px;
 }
-.pagination-div>button{
+
+.pagination-div > button {
   min-width: 3em;
-  height:2em;
+  height: 2em;
   background-color: white;
-  border:solid #007bff 1px;
+  border: solid #007bff 1px;
   border-radius: 10px;
   font-weight: bolder;
   color: #007bff;
 }
 
-.pagination-div>button:hover{
-  background-color:  #5cb85c;
+.pagination-div > button:disabled {
+  background-color: white;
+  border: none;
+  color: grey;
+}
+
+.pagination-div > button:hover {
+  background-color: #5cb85c;
   color: white;
   border: none;
 }
 
-@media (min-width:500px) {
-  .main-div{
+
+@media (min-width: 500px) {
+
+  .main-div {
     flex-wrap: wrap;
-    align-items:center;
-    justify-content:center;
+    align-items: center;
+    justify-content: center;
   }
-  #product-card{
-    width:14em;
+
+  #product-card {
+    width: 14em;
   }
 
 }

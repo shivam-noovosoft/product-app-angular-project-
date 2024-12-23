@@ -44,10 +44,11 @@ export class ProductComponent implements OnInit {
   }
 
   protected addToCart(item: Product) {
-    console.log('adding')
+
     const user = this.loggedUserService.get()
     const inCart = this.userCart.find(product => product.id === item.id)
     let itemFromList = this.filteredProductList.find(product => product.id === item.id)
+
     if (!inCart) {
       this.userCart.push({...item, quantity: 1})
       itemFromList!.quantity = 1
@@ -80,6 +81,7 @@ export class ProductComponent implements OnInit {
 
   private _fetchProducts() {
 
+    this.isLoading = true;
     this.productService.getProducts('products', this.limit, this.skip).subscribe((products: ProductResponse) => {
       this.productService.productsSubject.next(products.products);
     })
@@ -88,8 +90,9 @@ export class ProductComponent implements OnInit {
         return;
       }
       this.products = products;
-      this.filterProductList()
+      this.filterProductList();
     })
+    this.isLoading = false;
 
   }
 

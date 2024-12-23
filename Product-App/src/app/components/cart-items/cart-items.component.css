@@ -3,34 +3,42 @@
   min-height: 90%;
   background-color: #ededed;
   display: flex;
-  flex-direction:row;
-  flex-wrap: wrap;
+  flex-direction: row;
   justify-content:start;
-  align-items: start;
+  flex-wrap: wrap;
   gap: 1em;
   padding:1em;
 }
+
 #product-card{
-  width:13em;
+  width:15em;
 }
 
-.removeBtn{
+.remove-btn{
   display: flex;
-  flex-direction: row;
   justify-content: space-between;
-  min-width: 35%;
-  height: 2em;
+  align-items: center;
+  min-width: 40%;
+  height: 1.5em;
   border: none;
   background-color:#d9534f;
   color:white;
-  text-align: center;
 }
-.removeBtn>button{
+.remove-btn>button{
   border: none;
+  color: white;
   background-color: transparent;
   font-size: large;
 }
 
-.removeBtn>button:hover{
+.remove-btn>button:hover{
   background-color: #e30e09;
+}
+
+@media (min-width: 576px) {
+
+  #product-card{
+    width: 15em;
+  }
+
 }
