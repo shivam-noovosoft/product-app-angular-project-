@@ -39,7 +39,7 @@
           placeholder="Show all"
           #category='ngModel' [(ngModel)]="selectedCategory"
           class="select-category"
-          (clear)="resetCategorySelect()"
+          (clear)="resetCategorySelect('all')"
           (ngModelChange)="getProductByCategory(category.value)">
 
           @for (category of categories; track category.slug) {

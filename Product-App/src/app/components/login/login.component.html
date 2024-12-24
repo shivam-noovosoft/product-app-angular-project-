@@ -10,7 +10,7 @@
            #password='ngModel' ngModel
            placeholder="Enter your password" id="pass"
            minlength="5" required>
-    <span *ngIf="responseError">{{ responseError.error['message'] }}</span>
+    <span style="color: red" *ngIf="responseError">{{ responseError.error['message'] }}</span>
     <button class="loginBtn"
             [disabled]="selectedUser.invalid || password.invalid"
             type="submit"

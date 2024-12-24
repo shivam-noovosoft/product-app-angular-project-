@@ -2,8 +2,7 @@ import {Routes} from '@angular/router';
 import {AppComponent} from './app.component';
 import {ProductComponent} from './components/product-details/product.component';
 import {LoginComponent} from './components/login/login.component';
-import {HomeComponent} from './components/home/home.component';
-import {UserAuthService} from './services/auth.service';
+import {AuthService} from './services/auth.service';
 import {CartItemsComponent} from './components/cart-items/cart-items.component';
 
 
@@ -13,10 +12,10 @@ export const routes: Routes = [
   {path: '', redirectTo: 'login', pathMatch: 'full'},
   {
     path: 'products', component: ProductComponent, title: 'Product-details',
-    canActivate: [UserAuthService]
+    canActivate: [AuthService]
   },
   {
     path: 'cart/:userId', component: CartItemsComponent, title: 'cart-items',
-    canActivate: [UserAuthService]
+    canActivate: [AuthService]
   }
 ]

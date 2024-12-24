@@ -10,13 +10,13 @@ export class ApiService {
   constructor(private http: HttpClient) {
   }
 
-  get(string: string, limit: number, skip: number, queryParams?: string): Observable<unknown> {
+  get(url: string, limit: number, skip: number, queryParams?: string): Observable<unknown> {
 
 
     if (queryParams === null || queryParams === undefined) {
-      return this.http.get(string, {params: {limit: limit, skip: skip}})
+      return this.http.get(url, {params: {limit: limit, skip: skip}})
     }
-    return this.http.get(string, {
+    return this.http.get(url, {
       params: {q: queryParams, limit: limit, skip: skip}
     })
 

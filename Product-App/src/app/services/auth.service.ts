@@ -1,18 +1,19 @@
-import {Injectable, OnInit} from '@angular/core';
+import {Injectable} from '@angular/core';
 import {CanActivate, Router} from '@angular/router';
 import {User} from '../models/users.models';
 import {BehaviorSubject, Observable} from 'rxjs';
 import {ApiService} from './api.service';
 
 @Injectable({providedIn: 'root'})
-export class UserAuthService implements CanActivate {
+export class AuthService implements CanActivate {
 
-  userAuth: boolean = false;
-  isUserLoggedIn!: User
+  isUserLoggedIn: boolean = false;
+  isUserPresent!: User
   limit: number = 30;
-  skip: number = 0;
+
 
   allUsers = new BehaviorSubject<any>(null);
+  baseUrl: string = 'https://dummyjson.com/users';
 
   constructor(
     private router: Router,
@@ -22,10 +23,10 @@ export class UserAuthService implements CanActivate {
 
   canActivate(): boolean {
 
-    this.isUserLoggedIn = JSON.parse(<string>localStorage.getItem('loggedUserData'));
-    this.userAuth = !!this.isUserLoggedIn;
+    this.isUserPresent = JSON.parse(<string>localStorage.getItem('loggedUserData'));
+    this.isUserLoggedIn = !!this.isUserPresent;
 
-    if (!this.userAuth) {
+    if (!this.isUserLoggedIn) {
       void this.router.navigate(['login'])
       return false
     }
@@ -33,12 +34,12 @@ export class UserAuthService implements CanActivate {
   }
 
   getUsers(): Observable<any> {
-    return this.apiCallsService.get(`https://dummyjson.com/users`, this.limit, this.skip)
+    return this.apiCallsService.get(`${this.baseUrl}`, this.limit, 0)
   }
 
   loginUser(userName: string, password: string): Observable<any> {
     const data = {username: userName, password: password}
-    return this.apiCallsService.post(`https://dummyjson.com/user/login`, data)
+    return this.apiCallsService.post(`${this.baseUrl}/login`, data)
   }
 
 }

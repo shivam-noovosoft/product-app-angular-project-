@@ -1,14 +1,14 @@
 import {Component, OnInit} from '@angular/core';
-import {switchMap, tap} from 'rxjs';
+import {switchMap} from 'rxjs';
 import {FormControl, FormsModule, NgModel, ReactiveFormsModule} from '@angular/forms';
 import {ProductsService} from '../../services/products.service';
 import {Category, ProductResponse} from '../../models/products.models';
 import {NgForOf, NgIf} from '@angular/common';
-import {ActivatedRoute, Router} from '@angular/router';
+import {Router} from '@angular/router';
 import {User, UserResponse} from '../../models/users.models';
-import {UserAuthService} from '../../services/auth.service';
+import {AuthService} from '../../services/auth.service';
 import {LoggedUserService} from '../../services/loggedUser.service';
-import {UserChangedNotificationService} from '../../services/notification.service';
+import {NotificationService} from '../../services/notification.service';
 import {NgSelectComponent, NgOptionComponent,} from '@ng-select/ng-select';
 
 
@@ -35,30 +35,26 @@ export class NavbarComponent implements OnInit {
   isRouteToCartActive: boolean = false;
   selectUser: any;
   limit: number = 15
-  skip: number = 0
-  isLoading!: boolean;
+  skipProducts: number = 0
 
   searchValue = new FormControl<string>('')
 
   constructor(
     private productsService: ProductsService,
     protected router: Router,
-    private userAuthService: UserAuthService,
+    private authService: AuthService,
     protected loggedUserService: LoggedUserService,
-    private userChangedNotificationService: UserChangedNotificationService,
+    private notificationService: NotificationService,
   ) {
   }
 
   ngOnInit() {
-
-    this.getLoggedUserData()
+    this.getLoggedUserData();
     this.searchValue.valueChanges?.pipe(
-      tap(() => this.isLoading = true),
       switchMap(searchValue => {
-        return this.productsService.getProductsBySearch('products/search', this.limit, this.skip, searchValue as string)
+        return this.productsService.getProductsBySearch(this.limit, this.skipProducts, searchValue as string)
       })
     ).subscribe((val: ProductResponse) => {
-      this.isLoading = false;
       this.productsService.productsSubject.next(val.products)
     })
 
@@ -68,19 +64,18 @@ export class NavbarComponent implements OnInit {
     if (!category) {
       return
     }
-    this.productsService.getProductsByCategory(`products/category/${category}`, this.limit, this.skip).subscribe((products: ProductResponse) => {
-      this.productsService.productsSubject.next(products.products);
-    })
+    this.notificationService.categoryChangedNotification.next()
+    void this.router.navigate([`products`], {queryParams: {category: category}})
+
   }
 
-  resetCategorySelect() {
-    this.productsService.getProducts('products', this.limit, this.skip).subscribe((products: ProductResponse) => {
-      this.productsService.productsSubject.next(products.products);
-    })
+  resetCategorySelect(category: string) {
+    this.notificationService.categoryChangedNotification.next()
+    void this.router.navigate([`products`], {queryParams: {category: 'all'}})
   }
 
   fetchCategories() {
-    this.productsService.getProductsByCategory('products/categories', this.limit, this.skip).subscribe(category => {
+    this.productsService.getProductsByCategory(this.limit, this.skipProducts).subscribe(category => {
       if (category) {
         this.categories = category;
       }
@@ -96,43 +91,35 @@ export class NavbarComponent implements OnInit {
   private getLoggedUserData() {
     this.loggedUserData = this.loggedUserService.get();
     this.fetchCategories()
-    this.setUsers()
+    this.fetchUsers()
   }
 
   protected logout() {
     localStorage.removeItem('loggedUserData')
-    this.userAuthService.userAuth = false;
+    this.authService.isUserLoggedIn = false;
     void this.router.navigate(['/login'])
   }
 
   private fetchUsers() {
-    this.userAuthService.getUsers().subscribe(
-      (value: UserResponse) => this.userAuthService.allUsers.next(value.users),
-    )
-  }
-
-  private updateUsers() {
-    this.userAuthService.allUsers.subscribe((users: User[]) => {
-      this.users = users;
-    })
-  }
-
-  private setUsers() {
     if (this.loggedUserData.role === "admin") {
-      this.fetchUsers()
-      this.updateUsers()
+      this.authService.getUsers().subscribe(
+        (value: UserResponse) => this.authService.allUsers.next(value.users),
+      )
+      this.authService.allUsers.subscribe((users: User[]) => {
+        this.users = users;
+      })
       return;
     }
   }
 
   protected backToProductPage() {
-    void this.router.navigate(['/products'])
+    void this.router.navigate(['/products'],{queryParams:{category:'all'}})
     this.isRouteToCartActive = false;
   }
 
   protected adminSelectedUser(user: User) {
     this.loggedUserService.set(user)
-    this.userChangedNotificationService.userChangedNotification.next()
+    this.notificationService.userChangedNotification.next()
   }
 
 }

@@ -1,6 +1,9 @@
 import {Injectable,} from '@angular/core';
 import {BehaviorSubject,Subject, Observable} from 'rxjs';
 import {ApiService} from './api.service';
+import {NgModel} from '@angular/forms';
+import {Product} from '../models/products.models';
+import {Params} from '@angular/router';
 
 
 @Injectable({
@@ -8,25 +11,24 @@ import {ApiService} from './api.service';
 })
 export class ProductsService {
 
-  baseUrl: string = 'https://dummyjson.com/'
-  public productsSubject = new BehaviorSubject<any>(null);
+  baseUrl: string = 'https://dummyjson.com/products'
+  public productsSubject = new BehaviorSubject<Product[]|null>(null);
 
 
   constructor(private fetchDataService: ApiService) {
   }
 
-  getProducts(endPoint:string,limit:number,skip:number):Observable<any>{
-    const url=`${this.baseUrl}${endPoint}`
+  getProducts(limit:number,skip:number):Observable<any>{
+    return this.fetchDataService.get(this.baseUrl,limit,skip);
+  }
+
+  getProductsByCategory(limit:number,skip:number,endpoint?:Params):Observable<any>{
+   const url=  endpoint ? `${this.baseUrl}/category/${endpoint}` : `${this.baseUrl}/categories`
     return this.fetchDataService.get(url,limit,skip);
   }
 
-  getProductsByCategory(endPoint:string,limit:number,skip:number):Observable<any>{
-    const url=`${this.baseUrl}${endPoint}`
-    return this.fetchDataService.get(url,limit,skip);
-  }
-
-  getProductsBySearch(endPoint:string,limit:number,skip:number,queryParam: string):Observable<any>{
-    const url=`${this.baseUrl}${endPoint}`
+  getProductsBySearch(limit:number,skip:number,queryParam: string):Observable<any>{
+    const url=`${this.baseUrl}/search`
     return this.fetchDataService.get(url,limit,skip,queryParam);
   }
 }

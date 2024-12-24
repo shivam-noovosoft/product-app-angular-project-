@@ -6,7 +6,7 @@ import {FormsModule,} from '@angular/forms';
 import {Router} from '@angular/router';
 import {LoggedUserService} from '../../services/loggedUser.service';
 import {ResponseError} from '../../models/users.models'
-import {UserAuthService} from '../../services/auth.service';
+import {AuthService} from '../../services/auth.service';
 import {NavbarComponent} from '../navbar/navbar.component';
 
 @Component({
@@ -23,11 +23,10 @@ export class LoginComponent implements OnInit {
   users!: User[];
   responseError!: ResponseError
   selected!: string
-  isLoggedIn:boolean=false;
 
   constructor(
     private loggedUserService: LoggedUserService,
-    private userAuthService: UserAuthService,
+    private authService:AuthService,
     private router:Router
   ) {
   }
@@ -37,10 +36,10 @@ export class LoginComponent implements OnInit {
   }
 
   private _fetchUsers(){
-    this.userAuthService.getUsers().subscribe(
-      (value: UserResponse) => this.userAuthService.allUsers.next(value.users),
+    this.authService.getUsers().subscribe(
+      (value: UserResponse) => this.authService.allUsers.next(value.users),
     )
-    this.userAuthService.allUsers.subscribe((users: User[]) => {
+    this.authService.allUsers.subscribe((users: User[]) => {
       this.users = users;
     })
 
@@ -56,18 +55,18 @@ export class LoginComponent implements OnInit {
         this.showWarning({error: {message: 'invalid credentials'}})
         return;
       }
-      this.userAuthService.userAuth = true;
+      this.authService.isUserLoggedIn = true;
       localStorage.setItem('loggedUserData', JSON.stringify(user))
       this.loggedUserService.set(user)
-      void this.router.navigate(['/products'])
+      void this.router.navigate(['/products/all'])
       return;
     }
-    this.userAuthService.loginUser(user.username, password).subscribe({
+    this.authService.loginUser(user.username, password).subscribe({
       next: () => {
-        this.userAuthService.userAuth = true;
+        this.authService.isUserLoggedIn = true;
         this.loggedUserService.set(user)
         localStorage.setItem('loggedUserData', JSON.stringify(user))
-        void this.router.navigate(['/products'])
+        void this.router.navigate(['/products'],{ queryParams: { category: 'all' } })
       },
       error: error => this.showWarning(error)
     })
