@@ -46,9 +46,6 @@ export class ProductComponent implements OnInit {
     this.getLoggedUserData();
     this._fetchProductsViaParams();
     this._updateProducts();
-    this.notificationService.categoryChangedNotification.subscribe(() => {
-      this._fetchProductsViaParams();
-    })
 
   }
 
@@ -166,6 +163,7 @@ export class ProductComponent implements OnInit {
       return;
     }
     this.userCart = JSON.parse(<string>localStorage.getItem(`${this.loggedUser.id}`));
+
   }
 
   protected fetchNextProducts() {

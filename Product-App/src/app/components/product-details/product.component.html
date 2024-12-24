@@ -1,5 +1,6 @@
 <app-loader *ngIf="isLoading"></app-loader>
 <div class="main-div" *ngIf="!isLoading">
+  <h2 *ngIf="filteredProductList.length<1">No products related to this search...</h2>
   <div class="productsList-div">
     <app-product-card *ngFor="let product of filteredProductList" [product]="product" id="product-card">
     <span *ngIf="product.inCart" class="control-btn">

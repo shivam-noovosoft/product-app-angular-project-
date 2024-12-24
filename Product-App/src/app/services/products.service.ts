@@ -28,7 +28,7 @@ export class ProductsService {
   }
 
   getProductsBySearch(limit:number,skip:number,queryParam: string):Observable<any>{
-    const url=`${this.baseUrl}/search`
+    const url=queryParam ? `${this.baseUrl}/search` : `${this.baseUrl}`
     return this.fetchDataService.get(url,limit,skip,queryParam);
   }
 }

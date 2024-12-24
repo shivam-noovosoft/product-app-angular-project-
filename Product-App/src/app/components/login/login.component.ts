@@ -9,6 +9,7 @@ import {ResponseError} from '../../models/users.models'
 import {AuthService} from '../../services/auth.service';
 import {NavbarComponent} from '../navbar/navbar.component';
 
+
 @Component({
   standalone: true,
   selector: 'app-login',
@@ -58,7 +59,7 @@ export class LoginComponent implements OnInit {
       this.authService.isUserLoggedIn = true;
       localStorage.setItem('loggedUserData', JSON.stringify(user))
       this.loggedUserService.set(user)
-      void this.router.navigate(['/products/all'])
+      void this.router.navigate(['products'])
       return;
     }
     this.authService.loginUser(user.username, password).subscribe({
@@ -66,7 +67,7 @@ export class LoginComponent implements OnInit {
         this.authService.isUserLoggedIn = true;
         this.loggedUserService.set(user)
         localStorage.setItem('loggedUserData', JSON.stringify(user))
-        void this.router.navigate(['/products'],{ queryParams: { category: 'all' } })
+        void this.router.navigate(['products'],{ queryParams: { category: 'all' } })
       },
       error: error => this.showWarning(error)
     })

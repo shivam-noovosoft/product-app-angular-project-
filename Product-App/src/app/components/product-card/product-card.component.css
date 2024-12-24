@@ -1,4 +1,5 @@
 .main-div {
+  position: relative;
   display: flex;
   flex-direction: column;
   background-color:white;
@@ -11,6 +12,7 @@
 }
 
 .image {
+  position:sticky;
   object-fit:contain;
   width:100%;
   height:10em;
@@ -42,11 +44,13 @@
 
 #rating-li{
   background-color: #5cb85c;
-  width: 3.5em;
+  width: max-content;
   text-align: center;
   color: white;
   font-weight: bold;
   font-size: smaller;
+  /*padding: 3px;*/
+  padding: 0 5px 0 5px;
 }
 
 .rating-img{

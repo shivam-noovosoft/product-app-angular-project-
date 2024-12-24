@@ -2,7 +2,6 @@ import {Component, Input} from '@angular/core';
 import {Product} from '../../models/products.models';
 import {CurrencyPipe, NgIf, NgOptimizedImage} from '@angular/common';
 import {Ellipses} from '../../pipes/ellipses';
-
 @Component({
   standalone: true,
   selector: 'app-product-card',

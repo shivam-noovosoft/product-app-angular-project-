@@ -1,10 +1,10 @@
 import {Component, OnInit} from '@angular/core';
-import {switchMap} from 'rxjs';
+import {debounceTime, finalize, switchMap} from 'rxjs';
 import {FormControl, FormsModule, NgModel, ReactiveFormsModule} from '@angular/forms';
 import {ProductsService} from '../../services/products.service';
 import {Category, ProductResponse} from '../../models/products.models';
 import {NgForOf, NgIf} from '@angular/common';
-import {Router} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {User, UserResponse} from '../../models/users.models';
 import {AuthService} from '../../services/auth.service';
 import {LoggedUserService} from '../../services/loggedUser.service';
@@ -29,7 +29,7 @@ import {NgSelectComponent, NgOptionComponent,} from '@ng-select/ng-select';
 export class NavbarComponent implements OnInit {
 
   categories!: Category[]
-  selectedCategory!: string
+  selectedCategory!: string | null
   loggedUserData!: User;
   users!: User[];
   isRouteToCartActive: boolean = false;
@@ -45,6 +45,7 @@ export class NavbarComponent implements OnInit {
     private authService: AuthService,
     protected loggedUserService: LoggedUserService,
     private notificationService: NotificationService,
+    private route: ActivatedRoute
   ) {
   }
 
@@ -55,7 +56,36 @@ export class NavbarComponent implements OnInit {
         return this.productsService.getProductsBySearch(this.limit, this.skipProducts, searchValue as string)
       })
     ).subscribe((val: ProductResponse) => {
-      this.productsService.productsSubject.next(val.products)
+      this.route.queryParams.subscribe((params) => {
+        if (this.searchValue.value === '' && params['category'] !== 'all') {
+          return this.productsService.getProductsByCategory(this.limit, this.skipProducts, params['category'])
+            .subscribe((products: ProductResponse) => {
+              return this.productsService.productsSubject.next(products.products);
+            })
+        }
+        if (params['category'] === 'all') {
+          return this.productsService.productsSubject.next(val.products)
+        }
+        const categorizedItems = val.products.filter(item => {
+          return item.category === params['category']
+        })
+
+        this.productsService.productsSubject.next(categorizedItems)
+        // void this.router.navigate(['products'], {
+        //   queryParams: {
+        //     category: params['category'],
+        //     search: this.searchValue.value
+        //   }
+        // });
+      })
+    })
+
+    this.route.queryParams.subscribe((params) => {
+      if (params['category'] === 'all') {
+        this.selectedCategory = null
+        return;
+      }
+      this.selectedCategory = params['category'];
     })
 
   }
@@ -64,14 +94,13 @@ export class NavbarComponent implements OnInit {
     if (!category) {
       return
     }
-    this.notificationService.categoryChangedNotification.next()
     void this.router.navigate([`products`], {queryParams: {category: category}})
 
   }
 
   resetCategorySelect(category: string) {
-    this.notificationService.categoryChangedNotification.next()
-    void this.router.navigate([`products`], {queryParams: {category: 'all'}})
+    // this.notificationService.categoryChangedNotification.next()
+    void this.router.navigate([`products`], {queryParams: {category: category}})
   }
 
   fetchCategories() {
@@ -113,7 +142,7 @@ export class NavbarComponent implements OnInit {
   }
 
   protected backToProductPage() {
-    void this.router.navigate(['/products'],{queryParams:{category:'all'}})
+    void this.router.navigate(['/products'], {queryParams: {category: 'all'}})
     this.isRouteToCartActive = false;
   }
 
