@@ -2,7 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {debounceTime, switchMap} from 'rxjs';
 import {FormControl, FormsModule, NgModel, ReactiveFormsModule} from '@angular/forms';
 import {ProductsService} from '../../services/products.service';
-import {Category, ProductResponse} from '../../models/products.models';
+import {Category} from '../../models/products.models';
 import {NgIf} from '@angular/common';
 import {ActivatedRoute, Router} from '@angular/router';
 import {User, UserResponse} from '../../models/users.models';
@@ -33,7 +33,7 @@ export class NavbarComponent implements OnInit {
   selectUser: any;
   limit: number = 15
   skipProducts: number = 0
-  cartItemCount: number = 0
+
   searchValue = new FormControl<string>('')
 
   constructor(
@@ -41,74 +41,63 @@ export class NavbarComponent implements OnInit {
     protected router: Router,
     private userService: UserService,
     private route: ActivatedRoute,
-    private authService:AuthService
+    private authService: AuthService
   ) {
   }
 
   ngOnInit() {
-    this.getLoggedUserData();
+
+    this._getLoggedUserData();
+    this._setFields()
     this.searchValue.valueChanges.pipe(
       debounceTime(500),
       switchMap(val => {
-        return this.router.navigate(['products'], {queryParams: {search: val}})
+        return this.router.navigate(['products'], {queryParams: {category: this.selectedCategory, search: val}})
       })
     ).subscribe();
 
+  }
+
+  private _setFields() {
     this.route.queryParams.subscribe((params) => {
-      if (!params['category'] && !params['search']) {
-        this.searchValue.setValue('')
-        this.selectedCategory = null
-      }
-      if (!params['search']) {
-        this.searchValue.setValue('')
-      }
-      if (!params['category']) {
-        this.selectedCategory = null
-      }
-      this.selectedCategory = params['category'];
+      this.selectedCategory = params['category']
       this.searchValue.setValue(params['search'])
     })
-
   }
 
-  getProductByCategory(category: NgModel) {
-    if (!category) {
-      return
-    }
+
+  protected getProductByCategory(category: NgModel) {
     void this.router.navigate([`products`], {queryParams: {category: category}})
-
   }
 
-  resetCategorySelect() {
+  protected resetCategorySelect() {
     void this.router.navigate([`products`])
   }
 
-  fetchCategories() {
+  private _fetchCategories() {
     this.productsService.getCategories(this.limit, this.skipProducts).subscribe(category => {
-      if (category) {
-        this.categories = category;
-      }
+      this.categories = category;
     })
   }
 
-  getUserCartItems() {
+  protected getUserCartItems() {
     void this.router.navigate([`/cart/${this.currentUserData.id}`])
   }
 
-  private getLoggedUserData() {
+  private _getLoggedUserData() {
     this.loggedUserData = JSON.parse(<string>localStorage.getItem('loggedUserData'))
-    this.userService.currentUser.subscribe(user=>{
-      this.currentUserData=user
+    this.userService.currentUser.subscribe(user => {
+      this.currentUserData = user
     })
-    this.fetchCategories()
-    this.fetchUsers()
+    this._fetchCategories()
+    this._fetchUsers()
   }
 
   protected logout() {
     this.authService.logoutUser()
   }
 
-  private fetchUsers() {
+  private _fetchUsers() {
     if (this.loggedUserData.role === "admin") {
       this.userService.getUsers().subscribe(
         (value: UserResponse) => this.userService.allUsers.next(value.users),

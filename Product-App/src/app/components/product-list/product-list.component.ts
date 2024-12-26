@@ -81,10 +81,25 @@ export class ProductListComponent implements OnInit {
 
   }
 
+  private _fetchProductsViaParams() {
+    this.route.queryParams.subscribe(params => {
+      console.log('routeFn')
+      if (!params['category'] && !params['search']) {
+        this._fetchProducts();
+      }
+      if (!params['search'] && params['category']) {
+        this._fetchProductByCategory(params['category'])
+      }
+      if (!params['category'] && params['search'] || (params['search'] && params['category'])) {
+        this._fetchProductsBySearch(params['search']);
+      }
+
+    })
+  }
 
   private _fetchProducts() {
 
-    console.log('called')
+    console.log('fetchProducts')
     this.isLoading = true;
     this.productService.getProducts(this.limit, this.skipProducts).pipe(
       debounceTime(500),
@@ -102,22 +117,6 @@ export class ProductListComponent implements OnInit {
 
   }
 
-  private _fetchProductsViaParams() {
-    this.route.queryParams.subscribe(params => {
-      if (!params['category'] && !params['search']) {
-        console.log('in 1')
-        this._fetchProducts();
-      }
-      if (!params['category'] && params['search']) {
-        console.log('in 2')
-        this._fetchProductsBySearch(params['search']);
-      }
-      if (!params['search'] && params['category']) {
-        console.log('in 3')
-        this._fetchProductByCategory(params['category'])
-      }
-    })
-  }
 
   private _fetchProductsBySearch(searchString: string) {
 
@@ -127,18 +126,14 @@ export class ProductListComponent implements OnInit {
     ).subscribe(products => {
       this.route.queryParams.subscribe((params) => {
         if (params['category']) {
-          return this.productService.getProductsByCategory(this.limit, this.skipProducts, params['category'])
-            .subscribe((products: ProductResponse) => {
-              return this.productService.productsSubject.next(products.products);
-            })
+          const categorizedItems = products.products.filter((item: Product) => {
+            return item.category === params['category']
+          })
+          this.productService.productsSubject.next(categorizedItems)
         }
         if (!params['category']) {
           return this.productService.productsSubject.next(products.products)
         }
-        const categorizedItems = products.products.filter((item: Product) => {
-          return item.category === params['category']
-        })
-        this.productService.productsSubject.next(categorizedItems)
       })
       this.productService.productsSubject.subscribe(products => {
         if (!products) {
@@ -152,7 +147,7 @@ export class ProductListComponent implements OnInit {
 
 
   private _fetchProductByCategory(params: Params) {
-
+    console.log('fetchProductByCategory')
     this.isLoading = true;
     this.productService.getProductsByCategory(this.limit, this.skipProducts, params).pipe(
       debounceTime(1500),
@@ -167,56 +162,45 @@ export class ProductListComponent implements OnInit {
       this.products = products;
       this.filterProductList();
     })
-
   }
 
-
   private getLoggedUserData() {
-    this.userService.currentUser.subscribe(user=>{
-      this.currentUser=user
+    this.userService.currentUser.subscribe(user => {
+      this.currentUser = user
     })
     this.updateUserCartFromLocalStorage(this.currentUser);
   }
 
   private _updateProducts() {
-
     this.userService.userChangedNotification.subscribe(() => {
       this.getLoggedUserData();
       this.filterProductList();
     })
-
   }
 
   private updateUserCartFromLocalStorage(user: User) {
-
     const userCart = JSON.parse(<string>localStorage.getItem(`${user.id}`))
     if (userCart === null || userCart === undefined) {
       this.userCart = []
       this.filteredProductList = this.products
-      return;
+    } else {
+      this.userCart = JSON.parse(<string>localStorage.getItem(`${this.currentUser.id}`));
     }
-    this.userCart = JSON.parse(<string>localStorage.getItem(`${this.currentUser.id}`));
-
   }
 
   protected fetchNextProducts() {
-
     this.skipProducts += 15
     this._fetchProducts();
     this.filterProductList();
-
   }
 
   protected fetchPreviousProducts() {
-
     this.skipProducts -= 15
     this._fetchProducts();
     this.filterProductList();
-
   }
 
   private filterProductList() {
-
     this.filteredProductList = this.products.map(product => {
       const isItemIncluded = this.userCart.find((item: Product) => item.id === product.id)
       if (isItemIncluded) {

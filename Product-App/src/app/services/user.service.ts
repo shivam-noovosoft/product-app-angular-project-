@@ -10,9 +10,10 @@ export class UserService {
   allUsers = new BehaviorSubject<any>(null);
   baseUrl: string = 'https://dummyjson.com/users';
   limit:number=30;
-
   loggedUser:User=JSON.parse(<string>localStorage.getItem("loggedUserData"));
+
   currentUser= new BehaviorSubject<User>(this.loggedUser)
+  inCartItemCount=new BehaviorSubject<number>(0);
 
   userChangedNotification = new Subject<void>()
 
