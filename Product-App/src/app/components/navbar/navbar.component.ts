@@ -1,23 +1,20 @@
 import {Component, OnInit} from '@angular/core';
-import {debounceTime, finalize, switchMap} from 'rxjs';
+import {debounceTime, switchMap} from 'rxjs';
 import {FormControl, FormsModule, NgModel, ReactiveFormsModule} from '@angular/forms';
 import {ProductsService} from '../../services/products.service';
 import {Category, ProductResponse} from '../../models/products.models';
-import {NgForOf, NgIf} from '@angular/common';
+import {NgIf} from '@angular/common';
 import {ActivatedRoute, Router} from '@angular/router';
 import {User, UserResponse} from '../../models/users.models';
-import {AuthService} from '../../services/auth.service';
-import {LoggedUserService} from '../../services/loggedUser.service';
-import {NotificationService} from '../../services/notification.service';
+import {UserService} from '../../services/user.service';
 import {NgSelectComponent, NgOptionComponent,} from '@ng-select/ng-select';
-
+import {AuthService} from '../../services/auth.service';
 
 @Component({
   standalone: true,
   selector: 'app-navbar',
   imports: [
     FormsModule,
-    NgForOf,
     NgOptionComponent,
     NgIf,
     ReactiveFormsModule,
@@ -32,60 +29,43 @@ export class NavbarComponent implements OnInit {
   selectedCategory!: string | null
   loggedUserData!: User;
   users!: User[];
-  isRouteToCartActive: boolean = false;
   selectUser: any;
   limit: number = 15
   skipProducts: number = 0
-
+  cartItemCount: number = 0
   searchValue = new FormControl<string>('')
 
   constructor(
     private productsService: ProductsService,
     protected router: Router,
-    private authService: AuthService,
-    protected loggedUserService: LoggedUserService,
-    private notificationService: NotificationService,
-    private route: ActivatedRoute
+    private userService: UserService,
+    private route: ActivatedRoute,
+    private authService:AuthService
   ) {
   }
 
   ngOnInit() {
     this.getLoggedUserData();
-    this.searchValue.valueChanges?.pipe(
-      switchMap(searchValue => {
-        return this.productsService.getProductsBySearch(this.limit, this.skipProducts, searchValue as string)
+    this.searchValue.valueChanges.pipe(
+      debounceTime(500),
+      switchMap(val => {
+        return this.router.navigate(['products'], {queryParams: {search: val}})
       })
-    ).subscribe((val: ProductResponse) => {
-      this.route.queryParams.subscribe((params) => {
-        if (this.searchValue.value === '' && params['category'] !== 'all') {
-          return this.productsService.getProductsByCategory(this.limit, this.skipProducts, params['category'])
-            .subscribe((products: ProductResponse) => {
-              return this.productsService.productsSubject.next(products.products);
-            })
-        }
-        if (params['category'] === 'all') {
-          return this.productsService.productsSubject.next(val.products)
-        }
-        const categorizedItems = val.products.filter(item => {
-          return item.category === params['category']
-        })
-
-        this.productsService.productsSubject.next(categorizedItems)
-        // void this.router.navigate(['products'], {
-        //   queryParams: {
-        //     category: params['category'],
-        //     search: this.searchValue.value
-        //   }
-        // });
-      })
-    })
+    ).subscribe();
 
     this.route.queryParams.subscribe((params) => {
-      if (params['category'] === 'all') {
+      if (!params['category'] && !params['search']) {
+        this.searchValue.setValue('')
         this.selectedCategory = null
-        return;
+      }
+      if (!params['search']) {
+        this.searchValue.setValue('')
+      }
+      if (!params['category']) {
+        this.selectedCategory = null
       }
       this.selectedCategory = params['category'];
+      this.searchValue.setValue(params['search'])
     })
 
   }
@@ -98,13 +78,12 @@ export class NavbarComponent implements OnInit {
 
   }
 
-  resetCategorySelect(category: string) {
-    // this.notificationService.categoryChangedNotification.next()
-    void this.router.navigate([`products`], {queryParams: {category: category}})
+  resetCategorySelect() {
+    void this.router.navigate([`products`])
   }
 
   fetchCategories() {
-    this.productsService.getProductsByCategory(this.limit, this.skipProducts).subscribe(category => {
+    this.productsService.getCategories(this.limit, this.skipProducts).subscribe(category => {
       if (category) {
         this.categories = category;
       }
@@ -112,43 +91,39 @@ export class NavbarComponent implements OnInit {
   }
 
   getUserCartItems() {
-    const user = this.loggedUserService.get()
+    const user = this.userService.get()
     void this.router.navigate([`/cart/${user.id}`])
-    this.isRouteToCartActive = true;
   }
 
   private getLoggedUserData() {
-    this.loggedUserData = this.loggedUserService.get();
+    this.loggedUserData = this.userService.get();
+    // this.cartItemCount=JSON.parse(<string>localStorage.getItem(`${this.loggedUserData.id}`)).length;
     this.fetchCategories()
     this.fetchUsers()
   }
 
   protected logout() {
-    localStorage.removeItem('loggedUserData')
-    this.authService.isUserLoggedIn = false;
-    void this.router.navigate(['/login'])
+    this.authService.logoutUser()
   }
 
   private fetchUsers() {
     if (this.loggedUserData.role === "admin") {
-      this.authService.getUsers().subscribe(
-        (value: UserResponse) => this.authService.allUsers.next(value.users),
+      this.userService.getUsers().subscribe(
+        (value: UserResponse) => this.userService.allUsers.next(value.users),
       )
-      this.authService.allUsers.subscribe((users: User[]) => {
+      this.userService.allUsers.subscribe((users: User[]) => {
         this.users = users;
       })
-      return;
     }
   }
 
   protected backToProductPage() {
-    void this.router.navigate(['/products'], {queryParams: {category: 'all'}})
-    this.isRouteToCartActive = false;
+    void this.router.navigate(['/products'])
   }
 
   protected adminSelectedUser(user: User) {
-    this.loggedUserService.set(user)
-    this.notificationService.userChangedNotification.next()
+    this.userService.set(user)
+    this.userService.userChangedNotification.next()
   }
 
 }

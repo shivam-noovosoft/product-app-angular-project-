@@ -22,16 +22,14 @@
 
       <input type="text" placeholder="Search products...."
              [formControl]="searchValue"
-             *ngIf="!isRouteToCartActive"/>
+             *ngIf="!router.url.includes('/cart/')"
+            />
 
     </ng-container>
 
   </div>
 
-
-  <div class="navDiv-1" *ngIf="!isRouteToCartActive">
-
-    <ng-container *ngIf="!router.url.includes('/cart/')">
+  <div class="navDiv-1" *ngIf="!router.url.includes('/cart/')">
 
       <div class="categoryDiv">
 
@@ -39,7 +37,7 @@
           placeholder="Show all"
           #category='ngModel' [(ngModel)]="selectedCategory"
           class="select-category"
-          (clear)="resetCategorySelect('all')"
+          (clear)="resetCategorySelect()"
           (ngModelChange)="getProductByCategory(category.value)">
 
           @for (category of categories; track category.slug) {
@@ -58,8 +56,6 @@
         Cart
       </button>
       <button (click)="logout()">Logout</button>
-
-    </ng-container>
 
   </div>
 

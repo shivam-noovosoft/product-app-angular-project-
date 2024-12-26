@@ -2,8 +2,8 @@ import {AfterViewInit, Component, Input, OnChanges, OnInit} from '@angular/core'
 import {Product} from '../../models/products.models';
 import {ProductCardComponent} from '../product-card/product-card.component';
 import {NgForOf, NgIf} from '@angular/common';
-import {LoggedUserService} from '../../services/loggedUser.service';
 import {User} from '../../models/users.models';
+import {UserService} from '../../services/user.service';
 
 @Component({
   standalone: true,
@@ -19,7 +19,7 @@ export class CartItemsComponent implements OnChanges {
   filteredCartItems: Product[] = [];
 
   constructor(
-    private loggedUserService: LoggedUserService,
+    private userService: UserService,
   ) {
   }
 
@@ -38,7 +38,7 @@ export class CartItemsComponent implements OnChanges {
   }
 
   deleteItem(item: Product) {
-    const loggedUser = this.loggedUserService.get()
+    const loggedUser = this.userService.get()
     const deleteItem = this.filteredCartItems.find((product: Product) => product.id === item.id);
     if (deleteItem?.quantity === 1) {
       const index = this.filteredCartItems.findIndex((product: Product) => product.id === item.id)
@@ -50,7 +50,7 @@ export class CartItemsComponent implements OnChanges {
   }
 
   addItem(item: Product) {
-    const user = this.loggedUserService.get()
+    const user = this.userService.get()
     const itemToAdd = this.filteredCartItems.find(product => product.id === item.id)
     itemToAdd!.quantity++
     localStorage.setItem(`${user.id}`, JSON.stringify(this.filteredCartItems))

@@ -1,24 +1,22 @@
-import {Component, Input, OnInit} from '@angular/core';
-import {AsyncPipe, NgForOf, NgIf} from '@angular/common';
+import {Component, OnInit} from '@angular/core';
+import {NgForOf, NgIf} from '@angular/common';
 import {ProductsService} from '../../services/products.service';
 import {ProductCardComponent} from '../product-card/product-card.component';
 import {Product, ProductResponse} from '../../models/products.models';
 import {User} from '../../models/users.models';
-import {LoggedUserService} from '../../services/loggedUser.service';
+import {UserService} from '../../services/user.service';
 import {LoaderComponent} from '../loader/loader.component';
-import {NotificationService} from '../../services/notification.service';
 import {debounceTime, finalize} from 'rxjs';
 import {ActivatedRoute, Params} from '@angular/router';
 
-
 @Component({
   standalone: true,
-  selector: 'app-product-details',
-  imports: [NgForOf, ProductCardComponent, NgIf, AsyncPipe, LoaderComponent],
-  templateUrl: './product.component.html',
-  styleUrl: './product.component.css'
+  selector: 'app-product-list',
+  imports: [NgForOf, ProductCardComponent, NgIf, LoaderComponent],
+  templateUrl: './product-list.component.html',
+  styleUrl: './product-list.component.css'
 })
-export class ProductComponent implements OnInit {
+export class ProductListComponent implements OnInit {
 
   products: Product[] = [];
   userCart: Product[] = [];
@@ -31,9 +29,8 @@ export class ProductComponent implements OnInit {
 
   constructor(
     private productService: ProductsService,
-    private loggedUserService: LoggedUserService,
-    private notificationService: NotificationService,
-    private route: ActivatedRoute
+    private userService: UserService,
+    private route: ActivatedRoute,
   ) {
   }
 
@@ -51,7 +48,7 @@ export class ProductComponent implements OnInit {
 
   protected addToCart(item: Product) {
 
-    const user = this.loggedUserService.get()
+    const user = this.userService.get()
     const inCart = this.userCart.find(product => product.id === item.id)
     let itemFromList = this.filteredProductList.find(product => product.id === item.id)
 
@@ -69,7 +66,7 @@ export class ProductComponent implements OnInit {
 
   protected removeFromCart(item: Product) {
 
-    const loggedUser = this.loggedUserService.get()
+    const loggedUser = this.userService.get()
     const itemToBeDeleted = this.userCart.find((product: Product) => product.id === item.id);
     let itemFromList = this.filteredProductList.find(product => product.id === item.id)
 
@@ -88,9 +85,10 @@ export class ProductComponent implements OnInit {
 
   private _fetchProducts() {
 
+    console.log('called')
     this.isLoading = true;
     this.productService.getProducts(this.limit, this.skipProducts).pipe(
-      debounceTime(5000),
+      debounceTime(500),
       finalize(() => this.isLoading = false)
     ).subscribe((products: ProductResponse) => {
       this.productService.productsSubject.next(products.products);
@@ -107,20 +105,57 @@ export class ProductComponent implements OnInit {
 
   private _fetchProductsViaParams() {
     this.route.queryParams.subscribe(params => {
-      if (params['category'] === 'all') {
+      if (!params['category'] && !params['search']) {
+        console.log('in 1')
         this._fetchProducts();
-        return;
       }
-      this.queryParams = params['category'];
-      this._fetchProductByCategory();
+      if (!params['category'] && params['search']) {
+        console.log('in 2')
+        this._fetchProductsBySearch(params['search']);
+      }
+      if (!params['search'] && params['category']) {
+        console.log('in 3')
+        this._fetchProductByCategory(params['category'])
+      }
+    })
+  }
+
+  private _fetchProductsBySearch(searchString: string) {
+
+    this.isLoading = true
+    this.productService.getProductsBySearch(this.limit, this.skipProducts, searchString).pipe(
+      finalize(() => this.isLoading = false)
+    ).subscribe(products => {
+      this.route.queryParams.subscribe((params) => {
+        if (params['category']) {
+          return this.productService.getProductsByCategory(this.limit, this.skipProducts, params['category'])
+            .subscribe((products: ProductResponse) => {
+              return this.productService.productsSubject.next(products.products);
+            })
+        }
+        if (!params['category']) {
+          return this.productService.productsSubject.next(products.products)
+        }
+        const categorizedItems = products.products.filter((item: Product) => {
+          return item.category === params['category']
+        })
+        this.productService.productsSubject.next(categorizedItems)
+      })
+      this.productService.productsSubject.subscribe(products => {
+        if (!products) {
+          return;
+        }
+        this.products = products;
+        this.filterProductList();
+      })
     })
   }
 
 
-  private _fetchProductByCategory() {
+  private _fetchProductByCategory(params: Params) {
 
     this.isLoading = true;
-    this.productService.getProductsByCategory(this.limit, this.skipProducts, this.queryParams).pipe(
+    this.productService.getProductsByCategory(this.limit, this.skipProducts, params).pipe(
       debounceTime(1500),
       finalize(() => this.isLoading = false)
     ).subscribe((products: ProductResponse) => {
@@ -139,14 +174,14 @@ export class ProductComponent implements OnInit {
 
   private getLoggedUserData() {
 
-    this.loggedUser = this.loggedUserService.get();
+    this.loggedUser = this.userService.get();
     this.updateUserCartFromLocalStorage(this.loggedUser);
 
   }
 
   private _updateProducts() {
 
-    this.notificationService.userChangedNotification.subscribe(() => {
+    this.userService.userChangedNotification.subscribe(() => {
       this.getLoggedUserData();
       this.filterProductList();
     })

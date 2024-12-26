@@ -1,8 +1,8 @@
-import {Component} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {RouterOutlet} from '@angular/router';
 import {NavbarComponent} from './components/navbar/navbar.component';
 import {NgIf} from '@angular/common';
-import {AuthService} from './services/auth.service';
+import {GuardService} from './services/guard.service';
 
 @Component({
   standalone: true,
@@ -13,7 +13,7 @@ import {AuthService} from './services/auth.service';
 })
 export class AppComponent {
 
-  constructor(protected authService: AuthService) {
+  constructor(protected guardService: GuardService) {
   }
 
 }

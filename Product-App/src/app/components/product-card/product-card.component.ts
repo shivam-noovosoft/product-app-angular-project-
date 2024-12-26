@@ -1,12 +1,12 @@
 import {Component, Input} from '@angular/core';
 import {Product} from '../../models/products.models';
-import {CurrencyPipe, NgIf, NgOptimizedImage} from '@angular/common';
+import {CurrencyPipe} from '@angular/common';
 import {Ellipses} from '../../pipes/ellipses';
 @Component({
   standalone: true,
   selector: 'app-product-card',
   imports: [
-    CurrencyPipe, Ellipses, NgOptimizedImage, NgIf
+    CurrencyPipe, Ellipses
   ],
   templateUrl: './product-card.component.html',
   styleUrl: './product-card.component.css'

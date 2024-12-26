@@ -1,45 +1,31 @@
-import {Injectable} from '@angular/core';
-import {CanActivate, Router} from '@angular/router';
+import {Injectable, OnInit} from '@angular/core';
 import {User} from '../models/users.models';
-import {BehaviorSubject, Observable} from 'rxjs';
+import {Observable} from 'rxjs';
 import {ApiService} from './api.service';
+import {GuardService} from './guard.service';
+import {Router} from '@angular/router';
 
 @Injectable({providedIn: 'root'})
-export class AuthService implements CanActivate {
+export class AuthService{
 
-  isUserLoggedIn: boolean = false;
-  isUserPresent!: User
-  limit: number = 30;
-
-
-  allUsers = new BehaviorSubject<any>(null);
   baseUrl: string = 'https://dummyjson.com/users';
 
   constructor(
-    private router: Router,
-    private apiCallsService: ApiService
+    private apiService: ApiService,
+    private guardService: GuardService,
+    private router: Router
   ) {
-  }
-
-  canActivate(): boolean {
-
-    this.isUserPresent = JSON.parse(<string>localStorage.getItem('loggedUserData'));
-    this.isUserLoggedIn = !!this.isUserPresent;
-
-    if (!this.isUserLoggedIn) {
-      void this.router.navigate(['login'])
-      return false
-    }
-    return true;
-  }
-
-  getUsers(): Observable<any> {
-    return this.apiCallsService.get(`${this.baseUrl}`, this.limit, 0)
   }
 
   loginUser(userName: string, password: string): Observable<any> {
     const data = {username: userName, password: password}
-    return this.apiCallsService.post(`${this.baseUrl}/login`, data)
+    return this.apiService.post(`${this.baseUrl}/login`, data)
+  }
+
+  logoutUser() {
+    localStorage.removeItem('loggedUserData')
+    this.guardService.isGuardActive = false;
+    void this.router.navigate(['/login'])
   }
 
 }
