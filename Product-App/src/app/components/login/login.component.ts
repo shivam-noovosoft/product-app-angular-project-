@@ -5,7 +5,7 @@ import {NgForOf, NgIf} from '@angular/common';
 import {FormsModule,} from '@angular/forms';
 import {Router} from '@angular/router';
 import {AuthService} from '../../services/auth.service';
-import {GuardService} from '../../services/guard.service';
+import {GuardService} from '../../guards/guard.service';
 import {UserService} from '../../services/user.service';
 
 @Component({

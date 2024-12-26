@@ -10,7 +10,9 @@ export class UserService {
   allUsers = new BehaviorSubject<any>(null);
   baseUrl: string = 'https://dummyjson.com/users';
   limit:number=30;
+
   loggedUser:User=JSON.parse(<string>localStorage.getItem("loggedUserData"));
+  currentUser= new BehaviorSubject<User>(this.loggedUser)
 
   userChangedNotification = new Subject<void>()
 
@@ -20,11 +22,11 @@ export class UserService {
   }
 
   set(user:User){
-    this.loggedUser=user;
+    this.currentUser.next(user);
   }
 
   get(){
-    return this.loggedUser
+    return this.currentUser
   }
 
   getUsers(): Observable<any> {

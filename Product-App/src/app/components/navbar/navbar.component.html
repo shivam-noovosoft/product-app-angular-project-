@@ -1,7 +1,10 @@
 <nav>
   <div class="username-input-div">
-    <span >
+    <span>
       {{ loggedUserData.firstName }} {{ loggedUserData.lastName }}
+    </span>
+    <span>
+      {{ currentUserData.firstName }} {{ currentUserData.lastName }}
     </span>
     <ng-container *ngIf="!router.url.includes('/cart/')">
 

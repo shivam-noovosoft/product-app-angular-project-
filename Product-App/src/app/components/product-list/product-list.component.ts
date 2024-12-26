@@ -21,6 +21,7 @@ export class ProductListComponent implements OnInit {
   products: Product[] = [];
   userCart: Product[] = [];
   loggedUser!: User
+  currentUser!: User
   isLoading: boolean = false;
   filteredProductList: Product[] = [];
   limit: number = 15;
@@ -48,7 +49,6 @@ export class ProductListComponent implements OnInit {
 
   protected addToCart(item: Product) {
 
-    const user = this.userService.get()
     const inCart = this.userCart.find(product => product.id === item.id)
     let itemFromList = this.filteredProductList.find(product => product.id === item.id)
 
@@ -60,13 +60,12 @@ export class ProductListComponent implements OnInit {
       inCart.quantity++
       itemFromList!.quantity++
     }
-    localStorage.setItem(`${user.id}`, JSON.stringify(this.userCart))
+    localStorage.setItem(`${this.currentUser.id}`, JSON.stringify(this.userCart))
 
   }
 
   protected removeFromCart(item: Product) {
 
-    const loggedUser = this.userService.get()
     const itemToBeDeleted = this.userCart.find((product: Product) => product.id === item.id);
     let itemFromList = this.filteredProductList.find(product => product.id === item.id)
 
@@ -78,7 +77,7 @@ export class ProductListComponent implements OnInit {
       itemToBeDeleted!.quantity -= 1;
       itemFromList!.quantity--
     }
-    localStorage.setItem(`${loggedUser.id}`, JSON.stringify(this.userCart))
+    localStorage.setItem(`${this.currentUser.id}`, JSON.stringify(this.userCart))
 
   }
 
@@ -173,10 +172,10 @@ export class ProductListComponent implements OnInit {
 
 
   private getLoggedUserData() {
-
-    this.loggedUser = this.userService.get();
-    this.updateUserCartFromLocalStorage(this.loggedUser);
-
+    this.userService.currentUser.subscribe(user=>{
+      this.currentUser=user
+    })
+    this.updateUserCartFromLocalStorage(this.currentUser);
   }
 
   private _updateProducts() {
@@ -191,13 +190,12 @@ export class ProductListComponent implements OnInit {
   private updateUserCartFromLocalStorage(user: User) {
 
     const userCart = JSON.parse(<string>localStorage.getItem(`${user.id}`))
-
     if (userCart === null || userCart === undefined) {
       this.userCart = []
       this.filteredProductList = this.products
       return;
     }
-    this.userCart = JSON.parse(<string>localStorage.getItem(`${this.loggedUser.id}`));
+    this.userCart = JSON.parse(<string>localStorage.getItem(`${this.currentUser.id}`));
 
   }
 

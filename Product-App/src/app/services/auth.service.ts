@@ -1,8 +1,7 @@
-import {Injectable, OnInit} from '@angular/core';
-import {User} from '../models/users.models';
+import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {ApiService} from './api.service';
-import {GuardService} from './guard.service';
+import {GuardService} from '../guards/guard.service';
 import {Router} from '@angular/router';
 
 @Injectable({providedIn: 'root'})

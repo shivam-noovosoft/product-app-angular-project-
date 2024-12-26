@@ -28,6 +28,7 @@ export class NavbarComponent implements OnInit {
   categories!: Category[]
   selectedCategory!: string | null
   loggedUserData!: User;
+  currentUserData!: User;
   users!: User[];
   selectUser: any;
   limit: number = 15
@@ -91,13 +92,14 @@ export class NavbarComponent implements OnInit {
   }
 
   getUserCartItems() {
-    const user = this.userService.get()
-    void this.router.navigate([`/cart/${user.id}`])
+    void this.router.navigate([`/cart/${this.currentUserData.id}`])
   }
 
   private getLoggedUserData() {
-    this.loggedUserData = this.userService.get();
-    // this.cartItemCount=JSON.parse(<string>localStorage.getItem(`${this.loggedUserData.id}`)).length;
+    this.loggedUserData = JSON.parse(<string>localStorage.getItem('loggedUserData'))
+    this.userService.currentUser.subscribe(user=>{
+      this.currentUserData=user
+    })
     this.fetchCategories()
     this.fetchUsers()
   }

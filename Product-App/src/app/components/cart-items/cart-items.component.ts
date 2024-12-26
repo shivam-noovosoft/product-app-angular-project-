@@ -12,11 +12,12 @@ import {UserService} from '../../services/user.service';
   templateUrl: './cart-items.component.html',
   styleUrl: './cart-items.component.css'
 })
-export class CartItemsComponent implements OnChanges {
+export class CartItemsComponent implements OnChanges, OnInit {
 
   @Input() userId!: number;
   cartItems: Product[] = [];
   filteredCartItems: Product[] = [];
+  currentUser!: User
 
   constructor(
     private userService: UserService,
@@ -25,6 +26,12 @@ export class CartItemsComponent implements OnChanges {
 
   ngOnChanges() {
     this.getLoggedUserData()
+  }
+
+  ngOnInit() {
+    this.userService.currentUser.subscribe(user => {
+      this.currentUser = user
+    })
   }
 
   getLoggedUserData() {
@@ -38,7 +45,6 @@ export class CartItemsComponent implements OnChanges {
   }
 
   deleteItem(item: Product) {
-    const loggedUser = this.userService.get()
     const deleteItem = this.filteredCartItems.find((product: Product) => product.id === item.id);
     if (deleteItem?.quantity === 1) {
       const index = this.filteredCartItems.findIndex((product: Product) => product.id === item.id)
@@ -46,14 +52,13 @@ export class CartItemsComponent implements OnChanges {
     } else {
       deleteItem!.quantity -= 1;
     }
-    localStorage.setItem(`${loggedUser.id}`, JSON.stringify(this.filteredCartItems))
+    localStorage.setItem(`${this.currentUser.id}`, JSON.stringify(this.filteredCartItems))
   }
 
   addItem(item: Product) {
-    const user = this.userService.get()
     const itemToAdd = this.filteredCartItems.find(product => product.id === item.id)
     itemToAdd!.quantity++
-    localStorage.setItem(`${user.id}`, JSON.stringify(this.filteredCartItems))
+    localStorage.setItem(`${this.currentUser.id}`, JSON.stringify(this.filteredCartItems))
   }
 
 }
