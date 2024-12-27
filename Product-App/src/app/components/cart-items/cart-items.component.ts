@@ -1,9 +1,11 @@
-import {AfterViewInit, Component, Input, OnChanges, OnInit} from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 import {Product} from '../../models/products.models';
 import {ProductCardComponent} from '../product-card/product-card.component';
 import {NgForOf, NgIf} from '@angular/common';
 import {User} from '../../models/users.models';
 import {UserService} from '../../services/user.service';
+import {CartService} from '../../services/cart.service';
+import {CartItems} from '../../models/carts.models';
 
 @Component({
   standalone: true,
@@ -12,36 +14,37 @@ import {UserService} from '../../services/user.service';
   templateUrl: './cart-items.component.html',
   styleUrl: './cart-items.component.css'
 })
-export class CartItemsComponent implements OnChanges, OnInit {
+export class CartItemsComponent implements OnInit {
 
   @Input() userId!: number;
-  cartItems: Product[] = [];
+  cartItems!: CartItems | null;
   filteredCartItems: Product[] = [];
   currentUser!: User
 
   constructor(
     private userService: UserService,
+    private cartService: CartService,
   ) {
   }
 
-  ngOnChanges() {
-    this.getLoggedUserData()
-  }
-
   ngOnInit() {
+
     this.userService.currentUser.subscribe(user => {
       this.currentUser = user
     })
+
+    this._getCurrentUserCart()
+
   }
 
-  getLoggedUserData() {
-    const userId = JSON.parse(<string>localStorage.getItem(`${this.userId}`))
-    if (userId === null || userId == undefined) {
-      this.cartItems = []
-    } else {
-      this.cartItems = JSON.parse(<string>localStorage.getItem(`${this.userId}`))
-      this.filteredCartItems = this.cartItems
-    }
+  private _getCurrentUserCart() {
+
+    this.cartService.cartItems.subscribe(cartItems => {
+      this.cartItems = cartItems
+      this.filteredCartItems = this.cartItems!.products
+      console.log(this.filteredCartItems)
+    })
+
   }
 
   deleteItem(item: Product) {
@@ -52,13 +55,13 @@ export class CartItemsComponent implements OnChanges, OnInit {
     } else {
       deleteItem!.quantity -= 1;
     }
-    localStorage.setItem(`${this.currentUser.id}`, JSON.stringify(this.filteredCartItems))
+    // localStorage.setItem(`${this.currentUser.id}`, JSON.stringify(this.filteredCartItems))
   }
 
   addItem(item: Product) {
     const itemToAdd = this.filteredCartItems.find(product => product.id === item.id)
     itemToAdd!.quantity++
-    localStorage.setItem(`${this.currentUser.id}`, JSON.stringify(this.filteredCartItems))
+    // localStorage.setItem(`${this.currentUser.id}`, JSON.stringify(this.filteredCartItems))
   }
 
 }

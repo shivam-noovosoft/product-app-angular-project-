@@ -13,7 +13,7 @@ export class UserService {
   loggedUser:User=JSON.parse(<string>localStorage.getItem("loggedUserData"));
 
   currentUser= new BehaviorSubject<User>(this.loggedUser)
-  inCartItemCount=new BehaviorSubject<number>(0);
+
 
   userChangedNotification = new Subject<void>()
 
@@ -33,5 +33,6 @@ export class UserService {
   getUsers(): Observable<any> {
     return this.apiCallsService.get(`${this.baseUrl}`, this.limit, 0)
   }
+
 
 }

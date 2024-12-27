@@ -1,9 +1,8 @@
 <div class="main-div">
-  <img [src]="product.images[0]" class="image" >
-<!--  <img [src]="product.thumbnail" class="image" loading="eager" fetchpriority="high">-->
+  <img [src]="product.images ? product.images[0] : product.thumbnail" class="image" >
   <ul class="ul">
     <li style="font-weight:bolder">{{ product.title }}</li>
-    <li id="rating-li">
+    <li id="rating-li" *ngIf="product.rating">
       {{ product.rating }}
       <img class="rating-img" src="assets/star.png" alt="star image">
     </li>
@@ -13,7 +12,7 @@
       {{ product.price | currency }}
       </span>
     </li>
-    <li style="font-size:small">
+    <li style="font-size:small" *ngIf="product.description">
       {{ product.description | ellipses }}
     </li>
     <ng-content></ng-content>

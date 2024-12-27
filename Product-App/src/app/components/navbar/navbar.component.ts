@@ -1,6 +1,6 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, TemplateRef} from '@angular/core';
 import {debounceTime, switchMap} from 'rxjs';
-import {FormControl, FormsModule, NgModel, ReactiveFormsModule} from '@angular/forms';
+import {FormControl, FormGroup, FormsModule, NgModel, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ProductsService} from '../../services/products.service';
 import {Category} from '../../models/products.models';
 import {NgIf} from '@angular/common';
@@ -9,6 +9,10 @@ import {User, UserResponse} from '../../models/users.models';
 import {UserService} from '../../services/user.service';
 import {NgSelectComponent, NgOptionComponent,} from '@ng-select/ng-select';
 import {AuthService} from '../../services/auth.service';
+import {CartService} from '../../services/cart.service';
+import {CartItems} from '../../models/carts.models';
+import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
+
 
 @Component({
   standalone: true,
@@ -33,6 +37,7 @@ export class NavbarComponent implements OnInit {
   selectUser: any;
   limit: number = 15
   skipProducts: number = 0
+  cartItems!: CartItems | null
 
   searchValue = new FormControl<string>('')
 
@@ -41,12 +46,13 @@ export class NavbarComponent implements OnInit {
     protected router: Router,
     private userService: UserService,
     private route: ActivatedRoute,
-    private authService: AuthService
+    private authService: AuthService,
+    private cartService: CartService,
+    private modalService:NgbModal
   ) {
   }
 
   ngOnInit() {
-
     this._getLoggedUserData();
     this._setFields()
     this.searchValue.valueChanges.pipe(
@@ -56,7 +62,19 @@ export class NavbarComponent implements OnInit {
       })
     ).subscribe();
 
+    this.cartService.cartItems.subscribe(cartItems => {
+      this.cartItems = cartItems
+    })
+
   }
+
+  newProductForm=new FormGroup({
+    title: new FormControl('', [Validators.required]),
+    price: new FormControl('', [Validators.required]),
+    rating: new FormControl('', [Validators.required,Validators.maxLength(5)]),
+    description: new FormControl('', [Validators.required,]),
+  })
+
 
   private _setFields() {
     this.route.queryParams.subscribe((params) => {
@@ -117,6 +135,20 @@ export class NavbarComponent implements OnInit {
     this.userService.userChangedNotification.next()
   }
 
+  protected openNewProductModal(content:TemplateRef<any>){
+    this.modalService.open(content,{centered:true})
+  }
+
+  protected closeModel(content:TemplateRef<any>){
+    this.modalService.dismissAll(content)
+  }
+
+  addNewProduct(){
+    this.productsService.addProduct(this.newProductForm.value).subscribe({
+     next:()=>alert('product added successfully'),
+     error:(err)=>alert(err.message),
+    })
+  }
 }
 
 

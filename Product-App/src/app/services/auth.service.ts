@@ -7,7 +7,7 @@ import {Router} from '@angular/router';
 @Injectable({providedIn: 'root'})
 export class AuthService{
 
-  baseUrl: string = 'https://dummyjson.com/users';
+  baseUrl: string = 'https://dummyjson.com/user';
 
   constructor(
     private apiService: ApiService,

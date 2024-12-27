@@ -8,6 +8,9 @@ import {UserService} from '../../services/user.service';
 import {LoaderComponent} from '../loader/loader.component';
 import {debounceTime, finalize} from 'rxjs';
 import {ActivatedRoute, Params} from '@angular/router';
+import {Cart, CartItems} from '../../models/carts.models';
+import {CartService} from '../../services/cart.service';
+
 
 @Component({
   standalone: true,
@@ -19,19 +22,18 @@ import {ActivatedRoute, Params} from '@angular/router';
 export class ProductListComponent implements OnInit {
 
   products: Product[] = [];
-  userCart: Product[] = [];
-  loggedUser!: User
+  userCartItem!: CartItems;
   currentUser!: User
   isLoading: boolean = false;
   filteredProductList: Product[] = [];
   limit: number = 15;
   skipProducts: number = 0
-  queryParams!: Params;
 
   constructor(
     private productService: ProductsService,
     private userService: UserService,
     private route: ActivatedRoute,
+    private cartService: CartService
   ) {
   }
 
@@ -49,41 +51,70 @@ export class ProductListComponent implements OnInit {
 
   protected addToCart(item: Product) {
 
-    const inCart = this.userCart.find(product => product.id === item.id)
-    let itemFromList = this.filteredProductList.find(product => product.id === item.id)
-
-    if (!inCart) {
-      this.userCart.push({...item, quantity: 1})
-      itemFromList!.quantity = 1
-      itemFromList!.inCart = true
+    if (this.userCartItem.products.length === 0) {
+      item.quantity=1
+      let itemFromList = this.filteredProductList.find(product => product.id === item.id)
+      this.cartService.addToCart(item).subscribe({
+        next: response => {
+          console.log(response)
+          itemFromList!.inCart = true
+          this.userCartItem = response
+          this.cartService.cartItems.next(response)
+        },
+        error: err => console.log(err)
+      })
     } else {
-      inCart.quantity++
-      itemFromList!.quantity++
-    }
-    localStorage.setItem(`${this.currentUser.id}`, JSON.stringify(this.userCart))
+      const inCart = this.userCartItem.products.find(product => product.id === item.id)
+      let itemFromList = this.filteredProductList.find(product => product.id === item.id)
 
+      if (inCart) {
+        inCart.quantity++
+        this.cartService.updateCart(inCart, this.userCartItem.id).subscribe({
+          next: response => {
+            itemFromList!.quantity++
+            this.userCartItem = response
+            this.cartService.cartItems.next(response)
+          },
+          error: err => alert('can not add item')
+        })
+      } else {
+        item.quantity++
+        this.cartService.updateCart(item, this.userCartItem.id).subscribe({
+          next: response => {
+            itemFromList!.inCart = true
+            this.userCartItem = response
+            this.cartService.cartItems.next(response)
+          },
+          error: err => alert('can not add item')
+        })
+
+      }
+
+    }
   }
 
   protected removeFromCart(item: Product) {
 
-    const itemToBeDeleted = this.userCart.find((product: Product) => product.id === item.id);
+    console.log(this.userCartItem)
+
+    const itemToBeDeleted = this.userCartItem.products.find((product: Product) => product.id === item.id);
     let itemFromList = this.filteredProductList.find(product => product.id === item.id)
 
     if (itemToBeDeleted?.quantity === 1) {
-      const index = this.userCart.findIndex((product: Product) => product.id === item.id)
+      const index = this.userCartItem.products.findIndex((product: Product) => product.id === item.id)
+      this.userCartItem.products.splice(index, 1)
       itemFromList!.inCart = false
-      this.userCart.splice(index, 1)
     } else {
-      itemToBeDeleted!.quantity -= 1;
       itemFromList!.quantity--
     }
-    localStorage.setItem(`${this.currentUser.id}`, JSON.stringify(this.userCart))
+    this.userCartItem.totalQuantity--
+    this.cartService.cartItems.next(this.userCartItem)
 
   }
 
   private _fetchProductsViaParams() {
     this.route.queryParams.subscribe(params => {
-      console.log('routeFn')
+
       if (!params['category'] && !params['search']) {
         this._fetchProducts();
       }
@@ -99,7 +130,6 @@ export class ProductListComponent implements OnInit {
 
   private _fetchProducts() {
 
-    console.log('fetchProducts')
     this.isLoading = true;
     this.productService.getProducts(this.limit, this.skipProducts).pipe(
       debounceTime(500),
@@ -147,7 +177,6 @@ export class ProductListComponent implements OnInit {
 
 
   private _fetchProductByCategory(params: Params) {
-    console.log('fetchProductByCategory')
     this.isLoading = true;
     this.productService.getProductsByCategory(this.limit, this.skipProducts, params).pipe(
       debounceTime(1500),
@@ -168,7 +197,22 @@ export class ProductListComponent implements OnInit {
     this.userService.currentUser.subscribe(user => {
       this.currentUser = user
     })
-    this.updateUserCartFromLocalStorage(this.currentUser);
+    this.updateUserCartFromLocalStorage();
+  }
+
+
+  private updateUserCartFromLocalStorage() {
+
+    this.cartService.getUserCartItems(this.currentUser.id).subscribe((cart: Cart) => {
+      if (cart.carts.length <= 0) {
+        this.cartService.cartItems.next({userId: this.currentUser.id, products: [], totalQuantity: 0,})
+        this.userCartItem = {userId: this.currentUser.id, products: [], totalQuantity: 0,}
+      } else {
+        this.cartService.cartItems.next(cart.carts[0])
+        this.userCartItem = cart.carts[0]
+        console.log(this.userCartItem)
+      }
+    })
   }
 
   private _updateProducts() {
@@ -176,16 +220,6 @@ export class ProductListComponent implements OnInit {
       this.getLoggedUserData();
       this.filterProductList();
     })
-  }
-
-  private updateUserCartFromLocalStorage(user: User) {
-    const userCart = JSON.parse(<string>localStorage.getItem(`${user.id}`))
-    if (userCart === null || userCart === undefined) {
-      this.userCart = []
-      this.filteredProductList = this.products
-    } else {
-      this.userCart = JSON.parse(<string>localStorage.getItem(`${this.currentUser.id}`));
-    }
   }
 
   protected fetchNextProducts() {
@@ -201,8 +235,9 @@ export class ProductListComponent implements OnInit {
   }
 
   private filterProductList() {
+
     this.filteredProductList = this.products.map(product => {
-      const isItemIncluded = this.userCart.find((item: Product) => item.id === product.id)
+      const isItemIncluded = this.userCartItem.products.find((item: Product) => item.id === product.id)
       if (isItemIncluded) {
         return {...isItemIncluded, inCart: true}
       } else {

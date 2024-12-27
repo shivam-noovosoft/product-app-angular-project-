@@ -34,6 +34,12 @@ export class ProductsService {
     const url = queryParam ? `${this.baseUrl}/search` : `${this.baseUrl}`
     return this.apiService.get(url, limit, skip, queryParam);
   }
+
+  addProduct(data:Record<string, any>):Observable<any>{
+    return this.apiService.post(`${this.baseUrl}/add`,data)
+  }
+
+
 }
 
 

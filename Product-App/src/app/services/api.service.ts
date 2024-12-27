@@ -22,9 +22,14 @@ export class ApiService {
 
   }
 
-  post(string: string, data: Record<string, string>): Observable<unknown> {
-    return this.http.post(string, data);
+  post(url: string, data: Record<string, any>): Observable<unknown> {
+    return this.http.post(url, data);
   }
+
+  put(url: string, data: Record<string, any>): Observable<unknown> {
+    return this.http.put(url, data);
+  }
+
 
 }
 

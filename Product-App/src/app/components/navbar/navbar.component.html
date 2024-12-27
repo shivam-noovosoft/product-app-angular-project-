@@ -61,6 +61,10 @@
           d="M8,3V7H21L18,17H6V4H4A1,1,0,0,1,4,2H7A1,1,0,0,1,8,3ZM6,20.5A1.5,1.5,0,1,0,7.5,19,1.5,1.5,0,0,0,6,20.5Zm9,0A1.5,1.5,0,1,0,16.5,19,1.5,1.5,0,0,0,15,20.5Z"/>
       </svg>
       Cart
+      <sup>{{ cartItems?.totalQuantity }}</sup>
+    </button>
+    <button type="button" (click)="openNewProductModal(form)">Add
+      product
     </button>
     <button (click)="logout()">Logout</button>
 
@@ -70,6 +74,43 @@
   <ng-container *ngIf="router.url.includes('/cart/')">
     <button (click)="backToProductPage()" class="backBtn">Back</button>
   </ng-container>
+
+  <ng-template #form>
+    <div class="modal-dialog modal-dialog-centered m-0">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5>Please provide product details</h5>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="newProductForm" class="product-form" (ngSubmit)="addNewProduct()">
+            <div>
+              <label for="title">Title:</label>
+              <input id="title" type="text" formControlName="title" name="productTitle"/>
+              <!--                <span *ngIf="productTitle">title is required</span>-->
+            </div>
+            <div>
+              <label for="price">Price: </label>
+              <input id="price" type="number" formControlName="price"/>
+            </div>
+            <div>
+              <label for="rating">Rating: </label>
+              <input id="rating" type="number" formControlName="rating"/>
+            </div>
+            <label for="description">Description: </label>
+            <input id="description" type="text" formControlName="description"/>
+            <div class="modal-footer">
+              <button type="submit" class="btn btn-primary"
+                      [disabled]="!newProductForm.valid"
+              >Add
+              </button>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="closeModel(form)">Close
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </ng-template>
 
 </nav>
 
