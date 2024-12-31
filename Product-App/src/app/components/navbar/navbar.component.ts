@@ -70,8 +70,8 @@ export class NavbarComponent implements OnInit {
 
   newProductForm=new FormGroup({
     title: new FormControl('', [Validators.required]),
-    price: new FormControl('', [Validators.required]),
-    rating: new FormControl('', [Validators.required,Validators.maxLength(5)]),
+    price: new FormControl('', [Validators.required,Validators.min(0)]),
+    rating: new FormControl('', [Validators.required,Validators.max(5)]),
     description: new FormControl('', [Validators.required,]),
   })
 
@@ -99,7 +99,7 @@ export class NavbarComponent implements OnInit {
   }
 
   protected getUserCartItems() {
-    void this.router.navigate([`/cart/${this.currentUserData.id}`])
+    void this.router.navigate([`cart/${this.currentUserData.id}`],{queryParamsHandling: 'merge'})
   }
 
   private _getLoggedUserData() {
@@ -145,7 +145,15 @@ export class NavbarComponent implements OnInit {
 
   addNewProduct(){
     this.productsService.addProduct(this.newProductForm.value).subscribe({
-     next:()=>alert('product added successfully'),
+     next:()=>{
+       alert('product added successfully')
+       this.newProductForm.patchValue({
+         title:'',
+         price:'',
+         rating:'',
+         description: ''
+       })
+     },
      error:(err)=>alert(err.message),
     })
   }

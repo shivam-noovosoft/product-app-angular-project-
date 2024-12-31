@@ -18,7 +18,7 @@ export class CartItemsComponent implements OnInit {
 
   @Input() userId!: number;
   cartItems!: CartItems | null;
-  filteredCartItems: Product[] = [];
+  filteredCartItems!: CartItems|null;
   currentUser!: User
 
   constructor(
@@ -41,27 +41,44 @@ export class CartItemsComponent implements OnInit {
 
     this.cartService.cartItems.subscribe(cartItems => {
       this.cartItems = cartItems
-      this.filteredCartItems = this.cartItems!.products
-      console.log(this.filteredCartItems)
+      this.filteredCartItems = this.cartItems
     })
 
   }
 
   deleteItem(item: Product) {
-    const deleteItem = this.filteredCartItems.find((product: Product) => product.id === item.id);
+    const deleteItem = this.filteredCartItems?.products.find((product: Product) => product.id === item.id);
     if (deleteItem?.quantity === 1) {
-      const index = this.filteredCartItems.findIndex((product: Product) => product.id === item.id)
-      this.filteredCartItems.splice(index, 1)
+      const index = this.filteredCartItems!.products.findIndex((product: Product) => product.id === item.id)
+      this.filteredCartItems!.products.splice(index, 1)
     } else {
       deleteItem!.quantity -= 1;
     }
-    // localStorage.setItem(`${this.currentUser.id}`, JSON.stringify(this.filteredCartItems))
+
+    const itemToBeDeleted = this.filteredCartItems?.products.find((product: Product) => product.id === item.id);
+    if (itemToBeDeleted?.quantity === 1) {
+      const index = this.filteredCartItems!.products.findIndex((product: Product) => product.id === item.id)
+      this.filteredCartItems?.products.splice(index, 1)
+    } else {
+      itemToBeDeleted!.quantity--
+    }
+    this.filteredCartItems!.totalQuantity--
+    this.cartService.cartItems.next(this.filteredCartItems)
+
   }
 
   addItem(item: Product) {
-    const itemToAdd = this.filteredCartItems.find(product => product.id === item.id)
-    itemToAdd!.quantity++
-    // localStorage.setItem(`${this.currentUser.id}`, JSON.stringify(this.filteredCartItems))
+    const itemToBeAdded = this.filteredCartItems?.products.find(product => product.id === item.id)
+    itemToBeAdded!.quantity++
+    this.cartService.updateCart(itemToBeAdded, this.filteredCartItems!.id).subscribe({
+      next: response => {
+        itemToBeAdded!.quantity++
+        this.filteredCartItems = response
+        this.cartService.cartItems.next(response)
+      },
+      error: () => alert('can not add item')
+    })
+
   }
 
 }

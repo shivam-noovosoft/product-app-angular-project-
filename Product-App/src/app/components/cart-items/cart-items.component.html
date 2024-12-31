@@ -1,6 +1,6 @@
 <div class="mainDiv">
   <h4 *ngIf="cartItems?.totalQuantity===0">No Items in the cart</h4>
-  <app-product-card *ngFor="let product of filteredCartItems" [product]="product" id="product-card">
+  <app-product-card *ngFor="let product of filteredCartItems?.products" [product]="product" id="product-card">
   <span  class="remove-btn">
       <button (click)="deleteItem(product)">-</button>
     {{ product.quantity }}

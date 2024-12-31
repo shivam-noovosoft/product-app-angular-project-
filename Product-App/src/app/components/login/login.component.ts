@@ -50,13 +50,11 @@ export class LoginComponent implements OnInit {
   }
 
   protected login(user: User, password: string) {
-
     this.authService.loginUser(user.username, password).subscribe({
       next: () => {
         this.guardService.isGuardActive = true;
-        // this.authService.isUserLoggedIn=true
         this.userService.set(user)
-        localStorage.setItem('loggedUserData', JSON.stringify(user))
+        localStorage.setItem('loggedUserData', JSON.stringify({id:user.id,firstName:user.firstName,lastName:user.lastName,role:user.role}))
         void this.router.navigate(['products'])
       },
       error: error => this.showWarning(error)

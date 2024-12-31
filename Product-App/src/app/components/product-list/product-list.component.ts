@@ -7,7 +7,7 @@ import {User} from '../../models/users.models';
 import {UserService} from '../../services/user.service';
 import {LoaderComponent} from '../loader/loader.component';
 import {debounceTime, finalize} from 'rxjs';
-import {ActivatedRoute, Params} from '@angular/router';
+import {ActivatedRoute, Params, Router} from '@angular/router';
 import {Cart, CartItems} from '../../models/carts.models';
 import {CartService} from '../../services/cart.service';
 
@@ -33,7 +33,7 @@ export class ProductListComponent implements OnInit {
     private productService: ProductsService,
     private userService: UserService,
     private route: ActivatedRoute,
-    private cartService: CartService
+    private cartService: CartService,
   ) {
   }
 
@@ -52,12 +52,13 @@ export class ProductListComponent implements OnInit {
   protected addToCart(item: Product) {
 
     if (this.userCartItem.products.length === 0) {
-      item.quantity=1
+      item.quantity = 1
       let itemFromList = this.filteredProductList.find(product => product.id === item.id)
       this.cartService.addToCart(item).subscribe({
         next: response => {
-          console.log(response)
           itemFromList!.inCart = true
+          this.userCartItem.products.push(item)
+          // this.userCartItem.totalQuantity=1
           this.userCartItem = response
           this.cartService.cartItems.next(response)
         },
@@ -75,7 +76,7 @@ export class ProductListComponent implements OnInit {
             this.userCartItem = response
             this.cartService.cartItems.next(response)
           },
-          error: err => alert('can not add item')
+          error: () => alert('can not add item')
         })
       } else {
         item.quantity++
@@ -83,28 +84,27 @@ export class ProductListComponent implements OnInit {
           next: response => {
             itemFromList!.inCart = true
             this.userCartItem = response
+            //this.userCartItem.products.push(item)
             this.cartService.cartItems.next(response)
           },
-          error: err => alert('can not add item')
+          error: () => alert('can not add item')
         })
-
       }
-
     }
   }
 
   protected removeFromCart(item: Product) {
 
-    console.log(this.userCartItem)
-
     const itemToBeDeleted = this.userCartItem.products.find((product: Product) => product.id === item.id);
     let itemFromList = this.filteredProductList.find(product => product.id === item.id)
-
     if (itemToBeDeleted?.quantity === 1) {
       const index = this.userCartItem.products.findIndex((product: Product) => product.id === item.id)
       this.userCartItem.products.splice(index, 1)
       itemFromList!.inCart = false
+      itemFromList!.quantity = 0
+      itemToBeDeleted.quantity = 0
     } else {
+      itemToBeDeleted!.quantity--
       itemFromList!.quantity--
     }
     this.userCartItem.totalQuantity--
@@ -112,7 +112,9 @@ export class ProductListComponent implements OnInit {
 
   }
 
+
   private _fetchProductsViaParams() {
+
     this.route.queryParams.subscribe(params => {
 
       if (!params['category'] && !params['search']) {
@@ -126,6 +128,7 @@ export class ProductListComponent implements OnInit {
       }
 
     })
+
   }
 
   private _fetchProducts() {
@@ -134,15 +137,18 @@ export class ProductListComponent implements OnInit {
     this.productService.getProducts(this.limit, this.skipProducts).pipe(
       debounceTime(500),
       finalize(() => this.isLoading = false)
-    ).subscribe((products: ProductResponse) => {
-      this.productService.productsSubject.next(products.products);
+    ).subscribe({
+      next: (products: ProductResponse) => {
+        this.productService.productsSubject.next(products!.products);
+        this.filterProductList(products.products);
+      },
+      error: (err) => console.log(err)
     })
     this.productService.productsSubject.subscribe(products => {
       if (!products) {
         return;
       }
       this.products = products;
-      this.filterProductList();
     })
 
   }
@@ -153,25 +159,29 @@ export class ProductListComponent implements OnInit {
     this.isLoading = true
     this.productService.getProductsBySearch(this.limit, this.skipProducts, searchString).pipe(
       finalize(() => this.isLoading = false)
-    ).subscribe(products => {
-      this.route.queryParams.subscribe((params) => {
-        if (params['category']) {
-          const categorizedItems = products.products.filter((item: Product) => {
-            return item.category === params['category']
-          })
-          this.productService.productsSubject.next(categorizedItems)
-        }
-        if (!params['category']) {
-          return this.productService.productsSubject.next(products.products)
-        }
-      })
-      this.productService.productsSubject.subscribe(products => {
-        if (!products) {
-          return;
-        }
-        this.products = products;
-        this.filterProductList();
-      })
+    ).subscribe({
+      next: (products: ProductResponse) => {
+        this.route.queryParams.subscribe((params) => {
+          if (params['category']) {
+            const categorizedItems = products.products.filter((item: Product) => {
+              return item.category === params['category']
+            })
+            this.filterProductList(categorizedItems)
+            this.productService.productsSubject.next(categorizedItems)
+          }
+          if (!params['category']) {
+            this.filterProductList(products.products)
+            return this.productService.productsSubject.next(products.products)
+          }
+        })
+      },
+      error: (err) => console.log(err),
+    })
+    this.productService.productsSubject.subscribe((products: Product[] | null) => {
+      if (!products) {
+        return;
+      }
+      this.products = products;
     })
   }
 
@@ -182,6 +192,7 @@ export class ProductListComponent implements OnInit {
       debounceTime(1500),
       finalize(() => this.isLoading = false)
     ).subscribe((products: ProductResponse) => {
+      this.filterProductList(products.products);
       this.productService.productsSubject.next(products.products);
     })
     this.productService.productsSubject.subscribe(products => {
@@ -189,7 +200,6 @@ export class ProductListComponent implements OnInit {
         return;
       }
       this.products = products;
-      this.filterProductList();
     })
   }
 
@@ -203,6 +213,7 @@ export class ProductListComponent implements OnInit {
 
   private updateUserCartFromLocalStorage() {
 
+
     this.cartService.getUserCartItems(this.currentUser.id).subscribe((cart: Cart) => {
       if (cart.carts.length <= 0) {
         this.cartService.cartItems.next({userId: this.currentUser.id, products: [], totalQuantity: 0,})
@@ -210,33 +221,31 @@ export class ProductListComponent implements OnInit {
       } else {
         this.cartService.cartItems.next(cart.carts[0])
         this.userCartItem = cart.carts[0]
-        console.log(this.userCartItem)
       }
+      this._fetchProductsViaParams()
     })
+
   }
 
   private _updateProducts() {
     this.userService.userChangedNotification.subscribe(() => {
       this.getLoggedUserData();
-      this.filterProductList();
     })
   }
 
   protected fetchNextProducts() {
     this.skipProducts += 15
     this._fetchProducts();
-    this.filterProductList();
   }
 
   protected fetchPreviousProducts() {
     this.skipProducts -= 15
     this._fetchProducts();
-    this.filterProductList();
   }
 
-  private filterProductList() {
+  private filterProductList(products: Product[]) {
 
-    this.filteredProductList = this.products.map(product => {
+    this.filteredProductList = products.map(product => {
       const isItemIncluded = this.userCartItem.products.find((item: Product) => item.id === product.id)
       if (isItemIncluded) {
         return {...isItemIncluded, inCart: true}

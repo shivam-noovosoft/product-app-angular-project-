@@ -63,7 +63,7 @@
       Cart
       <sup>{{ cartItems?.totalQuantity }}</sup>
     </button>
-    <button type="button" (click)="openNewProductModal(form)">Add
+    <button *ngIf="currentUserData.role==='admin'" type="button" (click)="openNewProductModal(form)">Add
       product
     </button>
     <button (click)="logout()">Logout</button>
@@ -76,8 +76,8 @@
   </ng-container>
 
   <ng-template #form>
-    <div class="modal-dialog modal-dialog-centered m-0">
-      <div class="modal-content">
+    <div class="modal-dialog modal-dialog-centered m-0 smaller" >
+      <div class="modal-content " >
         <div class="modal-header">
           <h5>Please provide product details</h5>
         </div>
@@ -85,19 +85,27 @@
           <form [formGroup]="newProductForm" class="product-form" (ngSubmit)="addNewProduct()">
             <div>
               <label for="title">Title:</label>
-              <input id="title" type="text" formControlName="title" name="productTitle"/>
-              <!--                <span *ngIf="productTitle">title is required</span>-->
+              <input id="title" type="text" formControlName="title"/><br>
+              <span style="color: #e30e09"
+                    *ngIf="newProductForm.get('title')?.invalid && newProductForm.get('title')?.touched">title is required</span>
             </div>
             <div>
               <label for="price">Price: </label>
-              <input id="price" type="number" formControlName="price"/>
+              <input id="price" type="number" formControlName="price"/><br>
+              <span style="color: #e30e09"
+                    *ngIf="newProductForm.get('price')?.invalid && newProductForm.get('price')?.touched">price is required and should be greater than 0</span>
             </div>
             <div>
               <label for="rating">Rating: </label>
-              <input id="rating" type="number" formControlName="rating"/>
+              <input id="rating" type="number" formControlName="rating"/><br>
+              <span style="color: #e30e09"
+                    *ngIf="newProductForm.get('rating')?.invalid && newProductForm.get('rating')?.touched">rating is required and should be less than 5</span>
             </div>
             <label for="description">Description: </label>
             <input id="description" type="text" formControlName="description"/>
+            <span
+              style="color: #e30e09"
+              *ngIf="newProductForm.get('description')?.invalid && newProductForm.get('description')?.touched">description  is required</span>
             <div class="modal-footer">
               <button type="submit" class="btn btn-primary"
                       [disabled]="!newProductForm.valid"
