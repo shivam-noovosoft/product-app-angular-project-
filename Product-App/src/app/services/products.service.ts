@@ -1,8 +1,9 @@
 import {Injectable,} from '@angular/core';
-import {BehaviorSubject, Observable} from 'rxjs';
+import {BehaviorSubject, Observable, Subject} from 'rxjs';
 import {ApiService} from './api.service';
 import {Product} from '../models/products.models';
 import {Params} from '@angular/router';
+import {HttpClient} from '@angular/common/http';
 
 
 @Injectable({
@@ -12,9 +13,12 @@ export class ProductsService {
 
   baseUrl: string = 'https://dummyjson.com/products'
   public productsSubject = new BehaviorSubject<Product[] | null>(null);
+  productAddedNotification=new Subject<void>();
 
-
-  constructor(private apiService: ApiService) {
+  constructor(
+    private apiService: ApiService,
+    private http:HttpClient,
+  ) {
   }
 
   getProducts(limit: number, skip: number): Observable<any> {
@@ -37,6 +41,13 @@ export class ProductsService {
 
   addProduct(data:Record<string, any>):Observable<any>{
     return this.apiService.post(`${this.baseUrl}/add`,data)
+  }
+
+  getNewProductImage(category:string):Observable<any> {
+    const baseUrl=`https://api.pexels.com/v1/search`
+    return this.http.get(baseUrl,{
+      params:{query:category,per_page:1},
+      headers:{'Authorization': 'Rk4xg6EiPSn5yhedNW5WmNm6wRGRrPcs3KudvYjYuLj2vtIqkcI4ZTYm'}})
   }
 
 

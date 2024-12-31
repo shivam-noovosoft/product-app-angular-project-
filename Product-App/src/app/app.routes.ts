@@ -14,7 +14,7 @@ export const routes: Routes = [
     canActivate: [GuardService]
   },
   {
-    path: 'cart/:userId',
+    path: 'cart',
     // component:CartItemsComponent,
     loadComponent:()=>import('./components/cart-items/cart-items.component').then(m=>m.CartItemsComponent),
     title: 'cart-items',

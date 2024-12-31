@@ -1,15 +1,15 @@
 <nav>
   <div class="username-input-div">
 
-    <span *ngIf="!router.url.includes('/cart/')">
+    <span *ngIf="!router.url.includes('cart')">
       {{ loggedUserData.firstName }} {{ loggedUserData.lastName }}
     </span>
 
-    <span *ngIf="router.url.includes('/cart/')">
+    <span *ngIf="router.url.includes('cart')">
       {{ currentUserData.firstName }} {{ currentUserData.lastName }}
      </span>
 
-    <ng-container *ngIf="!router.url.includes('/cart/')">
+    <ng-container *ngIf="!router.url.includes('cart')">
 
       <ng-select class="user-select"
                  clearable="false"
@@ -30,20 +30,19 @@
 
     <input type="text" placeholder="Search products...."
            [formControl]="searchValue"
-           *ngIf="!router.url.includes('/cart/')"
+           *ngIf="!router.url.includes('cart')"
     />
 
 
   </div>
 
-  <div class="navDiv-1" *ngIf="!router.url.includes('/cart/')">
+  <div class="navDiv-1" *ngIf="!router.url.includes('cart')">
 
     <div class="categoryDiv">
 
       <ng-select
         placeholder="Show all"
         #category='ngModel' [(ngModel)]="selectedCategory"
-        class="select-category"
         (clear)="resetCategorySelect()"
         (ngModelChange)="getProductByCategory(category.value)">
 
@@ -63,7 +62,7 @@
       Cart
       <sup>{{ cartItems?.totalQuantity }}</sup>
     </button>
-    <button *ngIf="currentUserData.role==='admin'" type="button" (click)="openNewProductModal(form)">Add
+    <button *ngIf="loggedUserData.role==='admin'" type="button" (click)="openAddNewProductModal(newAddProductForm)">Add
       product
     </button>
     <button (click)="logout()">Logout</button>
@@ -71,47 +70,63 @@
   </div>
 
 
-  <ng-container *ngIf="router.url.includes('/cart/')">
+  <ng-container *ngIf="router.url.includes('cart')">
     <button (click)="backToProductPage()" class="backBtn">Back</button>
   </ng-container>
 
-  <ng-template #form>
-    <div class="modal-dialog modal-dialog-centered m-0 smaller" >
-      <div class="modal-content " >
+  <ng-template #newAddProductForm id="form-template">
+    <div role='document' class="modal-dialog modal-dialog-centered m-0" id="form-dialog">
+      <div class="modal-content" id="form-modal">
         <div class="modal-header">
-          <h5>Please provide product details</h5>
+          <h5>Submit a Product</h5>
         </div>
         <div class="modal-body">
-          <form [formGroup]="newProductForm" class="product-form" (ngSubmit)="addNewProduct()">
+          <form [formGroup]="newProductForm" class="product-form my-0" (ngSubmit)="addNewProduct()" >
+            <img class="newProductImage" [src]="newProductImage" alt="" >
             <div>
-              <label for="title">Title:</label>
+              <label for="title">Product Name</label><br>
               <input id="title" type="text" formControlName="title"/><br>
-              <span style="color: #e30e09"
-                    *ngIf="newProductForm.get('title')?.invalid && newProductForm.get('title')?.touched">title is required</span>
+              <span class="text-danger"
+                    *ngIf="newProductForm.get('title')?.invalid && newProductForm.get('title')?.touched">Title is required</span>
             </div>
             <div>
-              <label for="price">Price: </label>
+              <ng-select
+                *ngIf=" categories"
+              formControlName="category"
+                (change)="getNewProductImage(newProductForm.get('category')?.value)"
+              placeholder="Please Select"
+              class="select-category">
+              @for (category of categories; track category.slug) {
+                <ng-option [value]="category.slug">{{ category.name }}</ng-option>
+              }
+              </ng-select>
+              <span class="text-danger" *ngIf="newProductForm.get('category')?.invalid && newProductForm.get('category')?.touched">Category is required</span>
+            </div>
+            <div>
+              <label for="price">Products Price</label><br>
               <input id="price" type="number" formControlName="price"/><br>
-              <span style="color: #e30e09"
-                    *ngIf="newProductForm.get('price')?.invalid && newProductForm.get('price')?.touched">price is required and should be greater than 0</span>
+              <span class="text-danger"
+                    *ngIf="newProductForm.get('price')?.invalid && newProductForm.get('price')?.touched">Price is required and should be greater than 0</span>
             </div>
             <div>
-              <label for="rating">Rating: </label>
+              <label for="rating">Products Rating</label><br>
               <input id="rating" type="number" formControlName="rating"/><br>
-              <span style="color: #e30e09"
-                    *ngIf="newProductForm.get('rating')?.invalid && newProductForm.get('rating')?.touched">rating is required and should be less than 5</span>
+              <span class="text-danger"
+                    *ngIf="newProductForm.get('rating')?.invalid && newProductForm.get('rating')?.touched">Rating is required and should be less than 5</span>
             </div>
-            <label for="description">Description: </label>
-            <input id="description" type="text" formControlName="description"/>
+            <label for="description">Products Description</label><br>
+            <textarea id="description" formControlName="description"></textarea>
             <span
-              style="color: #e30e09"
-              *ngIf="newProductForm.get('description')?.invalid && newProductForm.get('description')?.touched">description  is required</span>
+              class="text-danger"
+              *ngIf="newProductForm.get('description')?.invalid && newProductForm.get('description')?.touched">Description  is required</span>
+            <span class="text-success" [innerText]='successMessage'></span>
             <div class="modal-footer">
-              <button type="submit" class="btn btn-primary"
+              <button type="submit" class="btn btn-success" id="add-btn"
                       [disabled]="!newProductForm.valid"
               >Add
               </button>
-              <button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="closeModel(form)">Close
+              <button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="closeAddNewProductModal()">
+                Close
               </button>
             </div>
           </form>

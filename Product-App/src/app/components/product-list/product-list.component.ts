@@ -1,4 +1,5 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {debounceTime, finalize, Subscription} from 'rxjs';
 import {NgForOf, NgIf} from '@angular/common';
 import {ProductsService} from '../../services/products.service';
 import {ProductCardComponent} from '../product-card/product-card.component';
@@ -6,7 +7,6 @@ import {Product, ProductResponse} from '../../models/products.models';
 import {User} from '../../models/users.models';
 import {UserService} from '../../services/user.service';
 import {LoaderComponent} from '../loader/loader.component';
-import {debounceTime, finalize} from 'rxjs';
 import {ActivatedRoute, Params, Router} from '@angular/router';
 import {Cart, CartItems} from '../../models/carts.models';
 import {CartService} from '../../services/cart.service';
@@ -21,7 +21,7 @@ import {CartService} from '../../services/cart.service';
 })
 export class ProductListComponent implements OnInit {
 
-  products: Product[] = [];
+  // products: Product[] = [];
   userCartItem!: CartItems;
   currentUser!: User
   isLoading: boolean = false;
@@ -34,17 +34,21 @@ export class ProductListComponent implements OnInit {
     private userService: UserService,
     private route: ActivatedRoute,
     private cartService: CartService,
+    private router: Router
   ) {
   }
 
   ngOnInit() {
     this.init();
+    this.productService.productAddedNotification.subscribe(()=>{
+      this.filterProductList(this.filteredProductList)
+    })
   }
 
   private init() {
 
     this.getLoggedUserData();
-    this._fetchProductsViaParams();
+    // this._fetchProductsViaParams();
     this._updateProducts();
 
   }
@@ -57,7 +61,7 @@ export class ProductListComponent implements OnInit {
       this.cartService.addToCart(item).subscribe({
         next: response => {
           itemFromList!.inCart = true
-          this.userCartItem.products.push(item)
+          // this.userCartItem.products.push(item)
           // this.userCartItem.totalQuantity=1
           this.userCartItem = response
           this.cartService.cartItems.next(response)
@@ -76,7 +80,12 @@ export class ProductListComponent implements OnInit {
             this.userCartItem = response
             this.cartService.cartItems.next(response)
           },
-          error: () => alert('can not add item')
+          error: () => {
+            itemFromList!.quantity=1
+            inCart.quantity=1
+            // itemFromList!.inCart = false
+            alert('can not add item')
+          }
         })
       } else {
         item.quantity++
@@ -90,6 +99,7 @@ export class ProductListComponent implements OnInit {
           error: () => alert('can not add item')
         })
       }
+      // this.filterProductList(this.filteredProductList)
     }
   }
 
@@ -144,18 +154,20 @@ export class ProductListComponent implements OnInit {
       },
       error: (err) => console.log(err)
     })
-    this.productService.productsSubject.subscribe(products => {
-      if (!products) {
-        return;
-      }
-      this.products = products;
-    })
+    // this.productService.productsSubject.subscribe(products => {
+    //   if (!products) {
+    //     return;
+    //   }
+    //   this.products = products;
+    // })
 
   }
 
 
   private _fetchProductsBySearch(searchString: string) {
-
+    if (searchString === '') {
+      return;
+    }
     this.isLoading = true
     this.productService.getProductsBySearch(this.limit, this.skipProducts, searchString).pipe(
       finalize(() => this.isLoading = false)
@@ -177,12 +189,12 @@ export class ProductListComponent implements OnInit {
       },
       error: (err) => console.log(err),
     })
-    this.productService.productsSubject.subscribe((products: Product[] | null) => {
-      if (!products) {
-        return;
-      }
-      this.products = products;
-    })
+    // this.productService.productsSubject.subscribe((products: Product[] | null) => {
+    //   if (!products) {
+    //     return;
+    //   }
+    //   this.products = products;
+    // })
   }
 
 
@@ -195,12 +207,12 @@ export class ProductListComponent implements OnInit {
       this.filterProductList(products.products);
       this.productService.productsSubject.next(products.products);
     })
-    this.productService.productsSubject.subscribe(products => {
-      if (!products) {
-        return;
-      }
-      this.products = products;
-    })
+    // this.productService.productsSubject.subscribe(products => {
+    //   if (!products) {
+    //     return;
+    //   }
+    //   this.products = products;
+    // })
   }
 
   private getLoggedUserData() {
@@ -253,9 +265,15 @@ export class ProductListComponent implements OnInit {
         return {...product, inCart: false, quantity: 0}
       }
     })
+    const newProduct=JSON.parse(<string>localStorage.getItem('newProduct'))
+    if(newProduct){
+      this.filteredProductList.unshift(newProduct)
+    }
   }
 
 }
+
+
 
 
 

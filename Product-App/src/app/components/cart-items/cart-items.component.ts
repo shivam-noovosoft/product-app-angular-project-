@@ -1,11 +1,10 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {Product} from '../../models/products.models';
 import {ProductCardComponent} from '../product-card/product-card.component';
 import {NgForOf, NgIf} from '@angular/common';
-import {User} from '../../models/users.models';
-import {UserService} from '../../services/user.service';
 import {CartService} from '../../services/cart.service';
 import {CartItems} from '../../models/carts.models';
+
 
 @Component({
   standalone: true,
@@ -16,32 +15,21 @@ import {CartItems} from '../../models/carts.models';
 })
 export class CartItemsComponent implements OnInit {
 
-  @Input() userId!: number;
-  cartItems!: CartItems | null;
-  filteredCartItems!: CartItems|null;
-  currentUser!: User
+  filteredCartItems!: CartItems | null;
 
   constructor(
-    private userService: UserService,
     private cartService: CartService,
   ) {
   }
 
   ngOnInit() {
-
-    this.userService.currentUser.subscribe(user => {
-      this.currentUser = user
-    })
-
     this._getCurrentUserCart()
-
   }
 
   private _getCurrentUserCart() {
 
     this.cartService.cartItems.subscribe(cartItems => {
-      this.cartItems = cartItems
-      this.filteredCartItems = this.cartItems
+      this.filteredCartItems = cartItems
     })
 
   }
@@ -52,17 +40,8 @@ export class CartItemsComponent implements OnInit {
       const index = this.filteredCartItems!.products.findIndex((product: Product) => product.id === item.id)
       this.filteredCartItems!.products.splice(index, 1)
     } else {
-      deleteItem!.quantity -= 1;
+      deleteItem!.quantity --;
     }
-
-    const itemToBeDeleted = this.filteredCartItems?.products.find((product: Product) => product.id === item.id);
-    if (itemToBeDeleted?.quantity === 1) {
-      const index = this.filteredCartItems!.products.findIndex((product: Product) => product.id === item.id)
-      this.filteredCartItems?.products.splice(index, 1)
-    } else {
-      itemToBeDeleted!.quantity--
-    }
-    this.filteredCartItems!.totalQuantity--
     this.cartService.cartItems.next(this.filteredCartItems)
 
   }

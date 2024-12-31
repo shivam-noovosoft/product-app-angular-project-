@@ -1,9 +1,9 @@
-import {Component, OnInit, TemplateRef} from '@angular/core';
+import {Component, NgModuleRef, OnInit, TemplateRef} from '@angular/core';
 import {debounceTime, switchMap} from 'rxjs';
 import {FormControl, FormGroup, FormsModule, NgModel, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ProductsService} from '../../services/products.service';
 import {Category} from '../../models/products.models';
-import {NgIf} from '@angular/common';
+import {AsyncPipe, NgIf} from '@angular/common';
 import {ActivatedRoute, Router} from '@angular/router';
 import {User, UserResponse} from '../../models/users.models';
 import {UserService} from '../../services/user.service';
@@ -11,7 +11,8 @@ import {NgSelectComponent, NgOptionComponent,} from '@ng-select/ng-select';
 import {AuthService} from '../../services/auth.service';
 import {CartService} from '../../services/cart.service';
 import {CartItems} from '../../models/carts.models';
-import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
+import {NgbModal, NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
+import {response} from 'express';
 
 
 @Component({
@@ -22,7 +23,8 @@ import {NgbModal} from '@ng-bootstrap/ng-bootstrap';
     NgOptionComponent,
     NgIf,
     ReactiveFormsModule,
-    NgSelectComponent
+    NgSelectComponent,
+    AsyncPipe
   ],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
@@ -37,9 +39,14 @@ export class NavbarComponent implements OnInit {
   selectUser: any;
   limit: number = 15
   skipProducts: number = 0
-  cartItems!: CartItems | null
+  cartItems!: CartItems | null;
+  isRoutedToCart: boolean = false;
+  modalRef: NgbModalRef | undefined;
+  successMessage:string=''
+  newProductImage:string=''
 
   searchValue = new FormControl<string>('')
+
 
   constructor(
     private productsService: ProductsService,
@@ -48,7 +55,7 @@ export class NavbarComponent implements OnInit {
     private route: ActivatedRoute,
     private authService: AuthService,
     private cartService: CartService,
-    private modalService:NgbModal
+    private modalService: NgbModal
   ) {
   }
 
@@ -56,7 +63,7 @@ export class NavbarComponent implements OnInit {
     this._getLoggedUserData();
     this._setFields()
     this.searchValue.valueChanges.pipe(
-      debounceTime(500),
+      debounceTime(1000),
       switchMap(val => {
         return this.router.navigate(['products'], {queryParams: {category: this.selectedCategory, search: val}})
       })
@@ -68,19 +75,23 @@ export class NavbarComponent implements OnInit {
 
   }
 
-  newProductForm=new FormGroup({
+  newProductForm = new FormGroup({
+    image:new FormControl('',[Validators.required]),
     title: new FormControl('', [Validators.required]),
-    price: new FormControl('', [Validators.required,Validators.min(0)]),
-    rating: new FormControl('', [Validators.required,Validators.max(5)]),
+    category:new FormControl(null,[Validators.required]),
+    price: new FormControl('', [Validators.required, Validators.min(0)]),
+    rating: new FormControl('', [Validators.required, Validators.max(5)]),
     description: new FormControl('', [Validators.required,]),
   })
 
 
   private _setFields() {
+
     this.route.queryParams.subscribe((params) => {
       this.selectedCategory = params['category']
       this.searchValue.setValue(params['search'])
     })
+
   }
 
 
@@ -99,7 +110,9 @@ export class NavbarComponent implements OnInit {
   }
 
   protected getUserCartItems() {
-    void this.router.navigate([`cart/${this.currentUserData.id}`],{queryParamsHandling: 'merge'})
+    this.isRoutedToCart = true;
+    void this.router.navigate([`cart`],{queryParamsHandling:'preserve'})
+    // void this.router.navigate([`cart`])
   }
 
   private _getLoggedUserData() {
@@ -127,7 +140,12 @@ export class NavbarComponent implements OnInit {
   }
 
   protected backToProductPage() {
-    void this.router.navigate(['/products'])
+    void this.router.navigate(['/products'], {
+      queryParams: {
+        search: this.searchValue.value,
+        category: this.selectedCategory
+      }
+    })
   }
 
   protected adminSelectedUser(user: User) {
@@ -135,28 +153,43 @@ export class NavbarComponent implements OnInit {
     this.userService.userChangedNotification.next()
   }
 
-  protected openNewProductModal(content:TemplateRef<any>){
-    this.modalService.open(content,{centered:true})
+  protected openAddNewProductModal(content: TemplateRef<any>) {
+    this.modalRef= this.modalService.open(content, {centered: true})
   }
 
-  protected closeModel(content:TemplateRef<any>){
-    this.modalService.dismissAll(content)
+  protected closeAddNewProductModal() {
+    this.modalRef?.dismiss()
+    this.newProductForm.reset()
   }
 
-  addNewProduct(){
+  protected getNewProductImage(category:string|null|undefined){
+    if(!category){
+      return;
+    }
+    this.productsService.getNewProductImage(category).subscribe({
+      next:(response)=>{
+        this.newProductImage=response.photos[0].src.original
+      },
+      error:(err)=>console.log(err)
+    })
+
+  }
+
+
+
+  protected addNewProduct() {
     this.productsService.addProduct(this.newProductForm.value).subscribe({
-     next:()=>{
-       alert('product added successfully')
-       this.newProductForm.patchValue({
-         title:'',
-         price:'',
-         rating:'',
-         description: ''
-       })
-     },
-     error:(err)=>alert(err.message),
+      next: (response) => {
+        console.log(response)
+        this.successMessage='product added successfully'
+        this.newProductForm.reset()
+        // localStorage.setItem('newProduct',JSON.stringify(response))
+        this.productsService.productAddedNotification.next()
+      },
+      error: (err) => alert(err.message),
     })
   }
+
 }
 
 

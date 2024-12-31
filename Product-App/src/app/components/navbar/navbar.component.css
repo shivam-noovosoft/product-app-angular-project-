@@ -49,6 +49,16 @@ nav {
   border: none;
 }
 
+
+
+#add-btn:disabled {
+  background-color: grey;
+  border: none;
+  color: black;
+}
+
+
+
 @media (min-width :576px) {
 
   .username-input-div{
@@ -81,7 +91,7 @@ nav {
     /*background-color: #5cb85c;*/
     display: flex;
     flex-direction: column;
-    justify-content: space-evenly;
+    justify-content: start;
     align-content: center;
     gap: 1em;
     padding-block:1em ;
@@ -89,12 +99,22 @@ nav {
   .product-form > input{
     width: 60%;
   }
-
-  .modal-dialog{
-    /*width: 400px;*/
+  .product-form>textarea{
+    margin-top: -2em;
   }
-  .modal-content{
-    /*width: 400px;*/
+
+  #form-dialog{
+    /*width: 350px;*/
+    /*height: 700px;*/
+  }
+  #form-modal{
+    /*height: 700px;*/
+  }
+
+  .newProductImage{
+    object-fit: contain;
+    width: 15em;
+    height: 10em;
   }
 
 
