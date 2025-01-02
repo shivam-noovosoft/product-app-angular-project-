@@ -49,16 +49,6 @@ nav {
   border: none;
 }
 
-
-
-#add-btn:disabled {
-  background-color: grey;
-  border: none;
-  color: black;
-}
-
-
-
 @media (min-width :576px) {
 
   .username-input-div{

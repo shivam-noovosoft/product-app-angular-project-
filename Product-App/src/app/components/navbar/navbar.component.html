@@ -84,12 +84,13 @@
           <form [formGroup]="newProductForm" class="product-form py-0" (ngSubmit)="addNewProduct()" >
             <img  [src]="newProductImage['src']" *ngIf="newProductImage" class="newProductImage"  alt="new product image">
             <div>
-              <label for="title">Product Name</label><br>
+              <label for="title">Name</label><br>
               <input id="title" type="text" formControlName="title"/><br>
               <span class="text-danger"
                     *ngIf="newProductForm.get('title')?.invalid && newProductForm.get('title')?.touched">Title is required</span>
             </div>
             <div>
+              <label for="select-category" class="mb-1">Category</label>
               <ng-select
                 *ngIf=" categories"
               formControlName="category"
@@ -103,23 +104,23 @@
               <span class="text-danger" *ngIf="newProductForm.get('category')?.invalid && newProductForm.get('category')?.touched">Category is required</span>
             </div>
             <div>
-              <label for="price">Products Price</label><br>
+              <label for="price">Price</label><br>
               <input id="price" type="number" formControlName="price"/><br>
               <span class="text-danger"
                     *ngIf="newProductForm.get('price')?.invalid && newProductForm.get('price')?.touched">Price is required and should be greater than 0</span>
             </div>
             <div>
-              <label for="rating">Products Rating</label><br>
+              <label for="rating">Rating</label><br>
               <input id="rating" type="number" formControlName="rating"/><br>
               <span class="text-danger"
                     *ngIf="newProductForm.get('rating')?.invalid && newProductForm.get('rating')?.touched">Rating is required and should be less than 5</span>
             </div>
-            <label for="description">Products Description</label><br>
+            <label for="description">Description</label><br>
             <textarea id="description" formControlName="description"></textarea>
             <span
               class="text-danger"
               *ngIf="newProductForm.get('description')?.invalid && newProductForm.get('description')?.touched">Description  is required</span>
-            <span class="text-success" [innerText]='successMessage'></span>
+            <span class="text-success" *ngIf="isNewProductAdded">Product added successfully</span>
             <div class="modal-footer">
               <button type="submit" class="btn btn-success" id="add-btn"
                       [disabled]="!newProductForm.valid"

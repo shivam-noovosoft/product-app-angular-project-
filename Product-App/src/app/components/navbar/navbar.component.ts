@@ -1,5 +1,5 @@
 import {Component, OnInit, TemplateRef} from '@angular/core';
-import {debounceTime, switchMap} from 'rxjs';
+import {debounceTime,switchMap} from 'rxjs';
 import {FormControl, FormGroup, FormsModule, NgModel, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ProductsService} from '../../services/products.service';
 import {Category} from '../../models/products.models';
@@ -12,7 +12,6 @@ import {AuthService} from '../../services/auth.service';
 import {CartService} from '../../services/cart.service';
 import {CartItems} from '../../models/carts.models';
 import {NgbModal, NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
-
 
 
 @Component({
@@ -44,7 +43,7 @@ export class NavbarComponent implements OnInit {
   modalRef: NgbModalRef | undefined;
   successMessage: string = ''
   newProductImage: Record<string, any> | null = null
-
+  isNewProductAdded:boolean=false
   searchValue = new FormControl<string>('')
 
 
@@ -88,6 +87,9 @@ export class NavbarComponent implements OnInit {
   private _setFields() {
 
     this.route.queryParams.subscribe((params) => {
+      if (this.router.url.includes('cart')) {
+        return;
+      }
       this.selectedCategory = params['category']
       this.searchValue.setValue(params['search'])
     })
@@ -110,8 +112,9 @@ export class NavbarComponent implements OnInit {
   }
 
   protected getUserCartItems() {
+
     this.isRoutedToCart = true;
-    // void this.router.navigate([`cart`],{queryParamsHandling:"preserve"})
+    // void this.router.navigate([`cart`],{queryParamsHandling:'merge'})
     void this.router.navigate([`cart`])
   }
 
@@ -129,6 +132,7 @@ export class NavbarComponent implements OnInit {
   }
 
   private _fetchUsers() {
+
     if (this.loggedUserData.role === "admin") {
       this.userService.getUsers().subscribe(
         (value: UserResponse) => this.userService.allUsers.next(value.users),
@@ -137,6 +141,7 @@ export class NavbarComponent implements OnInit {
         this.users = users;
       })
     }
+
   }
 
   protected backToProductPage() {
@@ -154,7 +159,7 @@ export class NavbarComponent implements OnInit {
   }
 
   protected openAddNewProductModal(content: TemplateRef<any>) {
-    this.modalRef = this.modalService.open(content, {centered: true})
+    this.modalRef = this.modalService.open(content, {centered: true, size: 'sm'})
   }
 
   protected closeAddNewProductModal() {
@@ -176,15 +181,16 @@ export class NavbarComponent implements OnInit {
   }
 
   protected addNewProduct() {
-
+    this.isNewProductAdded=true
     this.newProductForm.get('image')?.setValue(JSON.stringify(this.newProductImage))
     this.productsService.addProduct(this.newProductForm.value).subscribe({
       next: () => {
         this.successMessage = 'product added successfully'
-        localStorage.setItem('newProduct',JSON.stringify(this.newProductForm.value))
+        localStorage.setItem('newProduct', JSON.stringify(this.newProductForm.value))
         this.productsService.productAddedNotification.next()
         this.newProductForm.reset()
-        this.newProductImage=null
+        this.newProductImage = null
+        this.isNewProductAdded=false
       },
       error: (err) => alert(err.message),
     })

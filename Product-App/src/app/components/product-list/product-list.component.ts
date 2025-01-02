@@ -19,7 +19,7 @@ import {CartService} from '../../services/cart.service';
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.css'
 })
-export class ProductListComponent implements OnInit,OnDestroy{
+export class ProductListComponent implements OnInit, OnDestroy {
 
   userCartItem!: CartItems;
   currentUser!: User
@@ -121,7 +121,6 @@ export class ProductListComponent implements OnInit,OnDestroy{
   private _fetchProductsViaParams() {
 
     this.routeSubscription = this.route.queryParams.subscribe(params => {
-      console.log('in param subFn')
       if (!params['category'] && !params['search']) {
         this._fetchProducts();
       }
@@ -131,7 +130,6 @@ export class ProductListComponent implements OnInit,OnDestroy{
       if (!params['category'] && params['search'] || (params['search'] && params['category'])) {
         this._fetchProductsBySearch(params['search']);
       }
-
     })
 
   }
