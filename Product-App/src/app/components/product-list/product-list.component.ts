@@ -7,7 +7,7 @@ import {Product, ProductResponse} from '../../models/products.models';
 import {User} from '../../models/users.models';
 import {UserService} from '../../services/user.service';
 import {LoaderComponent} from '../loader/loader.component';
-import {ActivatedRoute, Params, Router} from '@angular/router';
+import {ActivatedRoute, Params} from '@angular/router';
 import {Cart, CartItems} from '../../models/carts.models';
 import {CartService} from '../../services/cart.service';
 
@@ -19,36 +19,38 @@ import {CartService} from '../../services/cart.service';
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.css'
 })
-export class ProductListComponent implements OnInit {
+export class ProductListComponent implements OnInit,OnDestroy{
 
-  // products: Product[] = [];
   userCartItem!: CartItems;
   currentUser!: User
-  isLoading: boolean = false;
+  isLoading: boolean = true;
   filteredProductList: Product[] = [];
   limit: number = 15;
   skipProducts: number = 0
+  routeSubscription: Subscription | null = null;
 
   constructor(
     private productService: ProductsService,
     private userService: UserService,
     private route: ActivatedRoute,
     private cartService: CartService,
-    private router: Router
   ) {
   }
 
   ngOnInit() {
     this.init();
-    this.productService.productAddedNotification.subscribe(()=>{
+    this.productService.productAddedNotification.subscribe(() => {
       this.filterProductList(this.filteredProductList)
     })
+  }
+
+  ngOnDestroy() {
+    this.routeSubscription?.unsubscribe()
   }
 
   private init() {
 
     this.getLoggedUserData();
-    // this._fetchProductsViaParams();
     this._updateProducts();
 
   }
@@ -61,8 +63,6 @@ export class ProductListComponent implements OnInit {
       this.cartService.addToCart(item).subscribe({
         next: response => {
           itemFromList!.inCart = true
-          // this.userCartItem.products.push(item)
-          // this.userCartItem.totalQuantity=1
           this.userCartItem = response
           this.cartService.cartItems.next(response)
         },
@@ -73,33 +73,30 @@ export class ProductListComponent implements OnInit {
       let itemFromList = this.filteredProductList.find(product => product.id === item.id)
 
       if (inCart) {
-        inCart.quantity++
+        item.quantity++
         this.cartService.updateCart(inCart, this.userCartItem.id).subscribe({
-          next: response => {
-            itemFromList!.quantity++
-            this.userCartItem = response
-            this.cartService.cartItems.next(response)
+          next: () => {
+            this.userCartItem.totalQuantity++
+            this.cartService.cartItems.next(this.userCartItem)
           },
           error: () => {
-            itemFromList!.quantity=1
-            inCart.quantity=1
-            // itemFromList!.inCart = false
+            itemFromList!.quantity = 1
+            inCart.quantity = 1
             alert('can not add item')
           }
         })
       } else {
         item.quantity++
         this.cartService.updateCart(item, this.userCartItem.id).subscribe({
-          next: response => {
+          next: () => {
             itemFromList!.inCart = true
-            this.userCartItem = response
-            //this.userCartItem.products.push(item)
-            this.cartService.cartItems.next(response)
+            this.userCartItem.totalQuantity++
+            this.userCartItem.products.push(item)
+            this.cartService.cartItems.next(this.userCartItem)
           },
           error: () => alert('can not add item')
         })
       }
-      // this.filterProductList(this.filteredProductList)
     }
   }
 
@@ -115,18 +112,16 @@ export class ProductListComponent implements OnInit {
       itemToBeDeleted.quantity = 0
     } else {
       itemToBeDeleted!.quantity--
-      itemFromList!.quantity--
     }
     this.userCartItem.totalQuantity--
     this.cartService.cartItems.next(this.userCartItem)
-
   }
 
 
   private _fetchProductsViaParams() {
 
-    this.route.queryParams.subscribe(params => {
-
+    this.routeSubscription = this.route.queryParams.subscribe(params => {
+      console.log('in param subFn')
       if (!params['category'] && !params['search']) {
         this._fetchProducts();
       }
@@ -256,7 +251,7 @@ export class ProductListComponent implements OnInit {
   }
 
   private filterProductList(products: Product[]) {
-
+    this.isLoading = true
     this.filteredProductList = products.map(product => {
       const isItemIncluded = this.userCartItem.products.find((item: Product) => item.id === product.id)
       if (isItemIncluded) {
@@ -265,10 +260,14 @@ export class ProductListComponent implements OnInit {
         return {...product, inCart: false, quantity: 0}
       }
     })
-    const newProduct=JSON.parse(<string>localStorage.getItem('newProduct'))
-    if(newProduct){
-      this.filteredProductList.unshift(newProduct)
+    const newProduct = JSON.parse(<string>localStorage.getItem('newProduct'))
+    if (newProduct) {
+      this.filteredProductList.unshift(
+        {...newProduct, images: [JSON.parse(newProduct['image']).src]}
+      )
     }
+    this.isLoading = false
+
   }
 
 }

@@ -80,9 +80,9 @@
         <div class="modal-header">
           <h5>Submit a Product</h5>
         </div>
-        <div class="modal-body">
-          <form [formGroup]="newProductForm" class="product-form my-0" (ngSubmit)="addNewProduct()" >
-            <img class="newProductImage" [src]="newProductImage" alt="" >
+        <div class="modal-body py-0">
+          <form [formGroup]="newProductForm" class="product-form py-0" (ngSubmit)="addNewProduct()" >
+            <img  [src]="newProductImage['src']" *ngIf="newProductImage" class="newProductImage"  alt="new product image">
             <div>
               <label for="title">Product Name</label><br>
               <input id="title" type="text" formControlName="title"/><br>
@@ -95,7 +95,7 @@
               formControlName="category"
                 (change)="getNewProductImage(newProductForm.get('category')?.value)"
               placeholder="Please Select"
-              class="select-category">
+              id="select-category">
               @for (category of categories; track category.slug) {
                 <ng-option [value]="category.slug">{{ category.name }}</ng-option>
               }

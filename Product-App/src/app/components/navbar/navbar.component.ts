@@ -1,4 +1,4 @@
-import {Component, NgModuleRef, OnInit, TemplateRef} from '@angular/core';
+import {Component, OnInit, TemplateRef} from '@angular/core';
 import {debounceTime, switchMap} from 'rxjs';
 import {FormControl, FormGroup, FormsModule, NgModel, ReactiveFormsModule, Validators} from '@angular/forms';
 import {ProductsService} from '../../services/products.service';
@@ -12,7 +12,7 @@ import {AuthService} from '../../services/auth.service';
 import {CartService} from '../../services/cart.service';
 import {CartItems} from '../../models/carts.models';
 import {NgbModal, NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
-import {response} from 'express';
+
 
 
 @Component({
@@ -42,8 +42,8 @@ export class NavbarComponent implements OnInit {
   cartItems!: CartItems | null;
   isRoutedToCart: boolean = false;
   modalRef: NgbModalRef | undefined;
-  successMessage:string=''
-  newProductImage:string=''
+  successMessage: string = ''
+  newProductImage: Record<string, any> | null = null
 
   searchValue = new FormControl<string>('')
 
@@ -76,9 +76,9 @@ export class NavbarComponent implements OnInit {
   }
 
   newProductForm = new FormGroup({
-    image:new FormControl('',[Validators.required]),
+    image: new FormControl(''),
     title: new FormControl('', [Validators.required]),
-    category:new FormControl(null,[Validators.required]),
+    category: new FormControl(null, [Validators.required]),
     price: new FormControl('', [Validators.required, Validators.min(0)]),
     rating: new FormControl('', [Validators.required, Validators.max(5)]),
     description: new FormControl('', [Validators.required,]),
@@ -111,8 +111,8 @@ export class NavbarComponent implements OnInit {
 
   protected getUserCartItems() {
     this.isRoutedToCart = true;
-    void this.router.navigate([`cart`],{queryParamsHandling:'preserve'})
-    // void this.router.navigate([`cart`])
+    // void this.router.navigate([`cart`],{queryParamsHandling:"preserve"})
+    void this.router.navigate([`cart`])
   }
 
   private _getLoggedUserData() {
@@ -140,7 +140,7 @@ export class NavbarComponent implements OnInit {
   }
 
   protected backToProductPage() {
-    void this.router.navigate(['/products'], {
+    void this.router.navigate(['products'], {
       queryParams: {
         search: this.searchValue.value,
         category: this.selectedCategory
@@ -154,7 +154,7 @@ export class NavbarComponent implements OnInit {
   }
 
   protected openAddNewProductModal(content: TemplateRef<any>) {
-    this.modalRef= this.modalService.open(content, {centered: true})
+    this.modalRef = this.modalService.open(content, {centered: true})
   }
 
   protected closeAddNewProductModal() {
@@ -162,32 +162,33 @@ export class NavbarComponent implements OnInit {
     this.newProductForm.reset()
   }
 
-  protected getNewProductImage(category:string|null|undefined){
-    if(!category){
+  protected getNewProductImage(category: string | null | undefined) {
+    if (!category) {
       return;
     }
     this.productsService.getNewProductImage(category).subscribe({
-      next:(response)=>{
-        this.newProductImage=response.photos[0].src.original
+      next: (response) => {
+        this.newProductImage = {src: response.photos[0]['src'].original, url: response.photos[0]['url']}
       },
-      error:(err)=>console.log(err)
+      error: (err) => console.log(err)
     })
 
   }
 
-
-
   protected addNewProduct() {
+
+    this.newProductForm.get('image')?.setValue(JSON.stringify(this.newProductImage))
     this.productsService.addProduct(this.newProductForm.value).subscribe({
-      next: (response) => {
-        console.log(response)
-        this.successMessage='product added successfully'
-        this.newProductForm.reset()
-        // localStorage.setItem('newProduct',JSON.stringify(response))
+      next: () => {
+        this.successMessage = 'product added successfully'
+        localStorage.setItem('newProduct',JSON.stringify(this.newProductForm.value))
         this.productsService.productAddedNotification.next()
+        this.newProductForm.reset()
+        this.newProductImage=null
       },
       error: (err) => alert(err.message),
     })
+
   }
 
 }
