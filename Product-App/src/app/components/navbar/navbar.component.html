@@ -39,7 +39,6 @@
   <div class="navDiv-1" *ngIf="!router.url.includes('cart')">
 
     <div class="categoryDiv">
-
       <ng-select
         placeholder="Show all"
         #category='ngModel' [(ngModel)]="selectedCategory"
@@ -51,7 +50,6 @@
         }
 
       </ng-select>
-
     </div>
 
     <button id="cartBtn" (click)="getUserCartItems()">
@@ -80,47 +78,47 @@
         <div class="modal-header">
           <h5>Submit a Product</h5>
         </div>
-        <div class="modal-body py-0">
-          <form [formGroup]="newProductForm" class="product-form py-0" (ngSubmit)="addNewProduct()" >
+        <div class="modal-body py-1">
+          <form [formGroup]="newProductForm" class="product-form py-0" id="product-form" (ngSubmit)="addNewProduct()" >
             <img  [src]="newProductImage['src']" *ngIf="newProductImage" class="newProductImage"  alt="new product image">
             <div>
-              <label for="title">Name</label><br>
+              <label for="title" class="mb-1">Name</label><br>
               <input id="title" type="text" formControlName="title"/><br>
-              <span class="text-danger"
+              <span class="text-danger small"
                     *ngIf="newProductForm.get('title')?.invalid && newProductForm.get('title')?.touched">Title is required</span>
             </div>
             <div>
-              <label for="select-category" class="mb-1">Category</label>
+              <label  class="mb-1">Category</label>
               <ng-select
                 *ngIf=" categories"
               formControlName="category"
                 (change)="getNewProductImage(newProductForm.get('category')?.value)"
               placeholder="Please Select"
-              id="select-category">
+              class="select-category">
               @for (category of categories; track category.slug) {
                 <ng-option [value]="category.slug">{{ category.name }}</ng-option>
               }
               </ng-select>
-              <span class="text-danger" *ngIf="newProductForm.get('category')?.invalid && newProductForm.get('category')?.touched">Category is required</span>
+              <span class="text-danger small" *ngIf="newProductForm.get('category')?.invalid && newProductForm.get('category')?.touched">Category is required</span>
             </div>
             <div>
               <label for="price">Price</label><br>
-              <input id="price" type="number" formControlName="price"/><br>
-              <span class="text-danger"
+              <input class="mb-1" id="price" type="number" formControlName="price"/><br>
+              <span class="text-danger small"
                     *ngIf="newProductForm.get('price')?.invalid && newProductForm.get('price')?.touched">Price is required and should be greater than 0</span>
             </div>
             <div>
-              <label for="rating">Rating</label><br>
+              <label class="mb-1" for="rating">Rating</label><br>
               <input id="rating" type="number" formControlName="rating"/><br>
-              <span class="text-danger"
+              <span class="text-danger small"
                     *ngIf="newProductForm.get('rating')?.invalid && newProductForm.get('rating')?.touched">Rating is required and should be less than 5</span>
             </div>
-            <label for="description">Description</label><br>
+            <label class="mb-1" for="description">Description</label><br>
             <textarea id="description" formControlName="description"></textarea>
             <span
-              class="text-danger"
+              class="text-danger small"
               *ngIf="newProductForm.get('description')?.invalid && newProductForm.get('description')?.touched">Description  is required</span>
-            <span class="text-success" *ngIf="isNewProductAdded">Product added successfully</span>
+            <span class="text-success small" *ngIf="isNewProductAdded">Product added successfully</span>
             <div class="modal-footer">
               <button type="submit" class="btn btn-success" id="add-btn"
                       [disabled]="!newProductForm.valid"

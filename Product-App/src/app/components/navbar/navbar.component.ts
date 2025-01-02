@@ -62,7 +62,7 @@ export class NavbarComponent implements OnInit {
     this._getLoggedUserData();
     this._setFields()
     this.searchValue.valueChanges.pipe(
-      debounceTime(1000),
+      debounceTime(500),
       switchMap(val => {
         return this.router.navigate(['products'], {queryParams: {category: this.selectedCategory, search: val}})
       })
@@ -75,12 +75,12 @@ export class NavbarComponent implements OnInit {
   }
 
   newProductForm = new FormGroup({
-    image: new FormControl(''),
     title: new FormControl('', [Validators.required]),
+    description: new FormControl('', [Validators.required,]),
     category: new FormControl(null, [Validators.required]),
     price: new FormControl('', [Validators.required, Validators.min(0)]),
     rating: new FormControl('', [Validators.required, Validators.max(5)]),
-    description: new FormControl('', [Validators.required,]),
+    image: new FormControl(''),
   })
 
 
@@ -185,7 +185,6 @@ export class NavbarComponent implements OnInit {
     this.newProductForm.get('image')?.setValue(JSON.stringify(this.newProductImage))
     this.productsService.addProduct(this.newProductForm.value).subscribe({
       next: () => {
-        this.successMessage = 'product added successfully'
         localStorage.setItem('newProduct', JSON.stringify(this.newProductForm.value))
         this.productsService.productAddedNotification.next()
         this.newProductForm.reset()

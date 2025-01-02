@@ -56,15 +56,15 @@ export class ProductListComponent implements OnInit, OnDestroy {
   }
 
   protected addToCart(item: Product) {
-
     if (this.userCartItem.products.length === 0) {
       item.quantity = 1
       let itemFromList = this.filteredProductList.find(product => product.id === item.id)
       this.cartService.addToCart(item).subscribe({
-        next: response => {
+        next: () => {
           itemFromList!.inCart = true
-          this.userCartItem = response
-          this.cartService.cartItems.next(response)
+          this.userCartItem.products.push(item)
+          this.userCartItem.totalQuantity++
+          this.cartService.cartItems.next(this.userCartItem)
         },
         error: err => console.log(err)
       })
@@ -261,11 +261,12 @@ export class ProductListComponent implements OnInit, OnDestroy {
     const newProduct = JSON.parse(<string>localStorage.getItem('newProduct'))
     if (newProduct) {
       this.filteredProductList.unshift(
-        {...newProduct, images: [JSON.parse(newProduct['image']).src]}
+        {
+          ...newProduct, id: -1, quantity: 0,discountPercentage:10, images: [JSON.parse(newProduct['image']).src]
+        }
       )
     }
     this.isLoading = false
-
   }
 
 }

@@ -7,7 +7,7 @@
       <img class="rating-img" src="assets/star.png" alt="star image">
     </li>
     <li style="font-weight:bold">
-      {{ (product.price * product.discountPercentage) / 100 | currency }}
+      {{ (product.price-(product.price * product.discountPercentage) / 100) | currency }}
       <span class="original-price-span" style="font-weight: normal" [style.font-size.px]="12">
       {{ product.price | currency }}
       </span>
